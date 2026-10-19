@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THoaTV - Kênh Thông Tin & Giải Trí</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Header / Navigation -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex justify-between items-center w-full md:w-auto">
+                <a href="#" onclick="switchView('home')" class="flex items-center space-x-2 text-2xl font-black text-indigo-600 tracking-wider">
+                    <img id="nav-logo-img" src="https://via.placeholder.com/40" alt="Logo" class="w-9 h-9 object-cover rounded-full hidden">
+                    <span id="nav-logo-text">THoaTV</span>
+                </a>
+            </div>
+            
+            <nav class="flex flex-wrap justify-center items-center gap-4 md:space-x-6">
+                <a href="#" onclick="switchView('home')" class="text-slate-600 hover:text-indigo-600 font-medium transition text-sm md:text-base">Trang Chủ</a>
+                <a href="https://lichphatsong-thoatv.netlify.app/" target="_blank" class="text-slate-600 hover:text-indigo-600 font-medium transition text-sm md:text-base">Lịch Phát Sóng</a>
+                <a href="mailto:daithoatv@gmail.com?subject=Ph%E1%BA%A3n%20%C3%81nh%20-%20THoaTV" class="text-slate-600 hover:text-indigo-600 font-medium transition text-sm md:text-base">Phản Ánh</a>
+                <div id="nav-admin-link" class="hidden">
+                    <a href="#" onclick="switchView('admin')" class="text-indigo-600 font-bold hover:underline text-sm md:text-base">Quản Trị</a>
+                </div>
+            </nav>
+
+            <!-- Thanh Auth trên Máy tính (chỉ hiện trên desktop) -->
+            <div id="auth-nav" class="hidden md:flex items-center space-x-3">
+                <button onclick="openModal('login-modal')" class="text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-lg font-medium transition">Đăng Nhập</button>
+                <button onclick="openModal('register-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition">Đăng Ký</button>
+            </div>
+        </div>
+
+        <!-- Thanh Auth trên Điện thoại (chỉ hiện trên mobile) -->
+        <div id="auth-nav-mobile-bar" class="md:hidden bg-slate-100 px-4 py-2.5 flex justify-center items-center space-x-3 border-t border-slate-200">
+            <button onclick="openModal('login-modal')" class="text-indigo-600 text-sm font-medium">Đăng Nhập</button>
+            <span class="text-slate-300">|</span>
+            <button onclick="openModal('register-modal')" class="text-indigo-600 text-sm font-medium">Đăng Ký</button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full">
+        
+        <!-- VIEW: Home / Articles Feed -->
+        <div id="view-home" class="space-y-10">
+            <section class="text-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-3xl p-8 md:p-12 shadow-xl">
+                <h1 class="text-3xl md:text-5xl font-black mb-4">Chào mừng đến với THoaTV</h1>
+                <p class="text-base md:text-lg opacity-90 max-w-2xl mx-auto">Nơi cập nhật thông tin, tin tức và lịch phát sóng nhanh chóng.</p>
+            </section>
+
+            <!-- Khu vực hiển thị Khuyến cáo từ Quản trị viên -->
+            <section id="warnings-section" class="space-y-4 hidden">
+                <h2 class="text-xl font-bold text-rose-600 flex items-center gap-2">
+                    <span>⚠️</span> Khuyến Cáo Quan Trọng Từ Quản Trị Viên
+                </h2>
+                <div id="warnings-container" class="space-y-3">
+                    <!-- Khuyến cáo sẽ được render ở đây -->
+                </div>
+            </section>
+
+            <section>
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800 border-l-4 border-indigo-600 pl-3">Bài Viết Mới Nhất</h2>
+                    <div id="create-article-btn-container" class="hidden flex flex-wrap gap-2 items-center w-full md:w-auto">
+                        <button onclick="openArticleModal()" class="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">+ Đăng Tin Tức</button>
+                        <div id="admin-only-features" class="hidden flex flex-wrap gap-2 w-full md:w-auto">
+                            <button onclick="openWarningModal()" class="flex-1 md:flex-none bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition">+ Đăng Khuyến Cáo</button>
+                            <button onclick="openLogoModal()" class="flex-1 md:flex-none bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-semibold transition">Đổi URL Logo</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="articles-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <p class="text-slate-500 col-span-full text-center py-10">Đang tải danh sách bài viết...</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- VIEW: Admin Management Dashboard -->
+        <div id="view-admin" class="hidden space-y-8">
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Bảng Quản Trị Hệ Thống (Quản trị viên)</h2>
+                <p class="text-slate-500 text-sm mb-6">Quản lý duyệt tài khoản, khóa/mở quyền đổi tên, đổi mật khẩu thành viên, xóa tài khoản và chuyển quyền Quản trị viên.</p>
+                
+                <h3 class="text-lg font-bold text-slate-700 mb-4">Danh Sách Tài Khoản Hệ Thống</h3>
+                <div id="accounts-list-container" class="overflow-x-auto">
+                    <p class="text-slate-500">Đang tải danh sách tài khoản...</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL: Login -->
+    <div id="login-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative">
+            <button onclick="closeModal('login-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
+            <h3 class="text-2xl font-black mb-2 text-center">Đăng Nhập THoaTV</h3>
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Tên tài khoản</label>
+                    <input type="text" id="login-username" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-sm font-medium">Mật khẩu</label>
+                        <button type="button" onclick="switchToForgotModal()" class="text-xs text-indigo-600 hover:underline">Quên mật khẩu?</button>
+                    </div>
+                    <input type="password" id="login-password" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                    <button type="button" onclick="switchToForgotUsernameModal()" class="text-indigo-600 hover:underline">Quên tên tài khoản?</button>
+                </div>
+                <div id="login-error" class="text-red-500 text-sm hidden"></div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Đăng Nhập</button>
+            </form>
+            <div class="mt-4 text-center text-sm text-slate-500">Chưa có tài khoản? <button onclick="switchToRegisterModal()" class="text-indigo-600 font-semibold hover:underline">Đăng ký</button></div>
+        </div>
+    </div>
+
+    <!-- MODAL: Register -->
+    <div id="register-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative">
+            <button onclick="closeModal('register-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
+            <h3 class="text-2xl font-black mb-2 text-center">Tạo Tài Khoản Mới</h3>
+            <p class="text-xs text-slate-500 text-center mb-6">Tên: chỉ chữ cái, không khoảng trắng, không trùng.<br>Mật khẩu: có chữ thường, hoa, số và ký tự.</p>
+            <form onsubmit="handleRegister(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Tên tài khoản</label>
+                    <input type="text" id="reg-username" required placeholder="vd: thoatvuser" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Mật khẩu</label>
+                    <input type="password" id="reg-password" required placeholder="vd: Qw1!Qw1!" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div id="reg-error" class="text-red-500 text-sm hidden"></div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Đăng Ký</button>
+            </form>
+            <div class="mt-4 text-center text-sm text-slate-500">Đã có tài khoản? <button onclick="switchToLoginModal()" class="text-indigo-600 font-semibold hover:underline">Đăng nhập</button></div>
+        </div>
+    </div>
+
+    <!-- MODAL: Forgot Password -->
+    <div id="forgot-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative">
+            <button onclick="closeModal('forgot-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
+            <h3 class="text-2xl font-black mb-2 text-center">Quên Mật Khẩu</h3>
+            <p class="text-sm text-slate-600 text-center mb-6">Vui lòng liên hệ trực tiếp với <b>Quản trị viên</b> hệ thống để được hỗ trợ đổi mật khẩu mới.</p>
+            <button onclick="closeModal('forgot-modal'); switchToLoginModal();" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 py-2.5 rounded-xl font-semibold transition">Đã hiểu, quay lại Đăng Nhập</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Forgot Username -->
+    <div id="forgot-username-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative">
+            <button onclick="closeModal('forgot-username-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
+            <h3 class="text-2xl font-black mb-4 text-center">Khôi Phục Tên Tài Khoản</h3>
+            <form onsubmit="handleForgotUsername(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Nhập mật khẩu của bạn</label>
+                    <input type="password" id="fu-password" required placeholder="Nhập mật khẩu..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Tìm kiếm và chọn tài khoản cũ</label>
+                    <input type="text" id="fu-search" oninput="filterAccountsForRecovery()" placeholder="Gõ tên để tìm..." class="w-full px-3 py-1.5 border rounded-lg mb-2 text-sm focus:outline-none">
+                    <div id="fu-accounts-list" class="max-h-36 overflow-y-auto border rounded-lg p-2 space-y-1 bg-slate-50">
+                        <p class="text-xs text-slate-400 text-center py-2">Nhập mật khẩu và tìm tài khoản...</p>
+                    </div>
+                    <input type="hidden" id="fu-selected-username" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Tên tài khoản mới</label>
+                    <input type="text" id="fu-new-username" required placeholder="vd: newusername" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div id="fu-error" class="text-red-500 text-sm hidden"></div>
+                <div class="flex space-x-2">
+                    <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Đổi Tên</button>
+                    <button type="button" onclick="closeModal('forgot-username-modal'); switchToLoginModal();" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 py-2.5 rounded-xl font-semibold transition">Đóng</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Admin Change Member Password -->
+    <div id="admin-change-pass-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative">
+            <button onclick="closeModal('admin-change-pass-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
+            <h3 class="text-2xl font-black mb-2 text-center">Đổi Mật Khẩu Thành Viên</h3>
+            <p id="target-user-label" class="text-xs text-indigo-600 font-semibold text-center mb-4"></p>
+            <form onsubmit="handleAdminChangePassword(event)" class="space-y-4">
+                <input type="hidden" id="admin-target-username">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Mật khẩu mới</label>
+                    <input type="password" id="admin-new-password" required placeholder="vd: Qw1!Qw1!" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Xác Nhận Đổi Mật Khẩu</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Create/Edit Article -->
+    <div id="article-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl relative">
+            <button onclick="closeModal('article-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
+            <h3 id="article-modal-title" class="text-2xl font-black mb-4 text-center">Đăng Bài Viết</h3>
+            <form onsubmit="handleSaveArticle(event)" class="space-y-4">
+                <input type="hidden" id="art-edit-index" value="">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Tiêu đề bài viết</label>
+                    <input type="text" id="art-title" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Mô tả ngắn</label>
+                    <textarea id="art-desc" rows="2" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">URL Hình ảnh (HTTPS)</label>
+                    <input type="url" id="art-img" placeholder="https://..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Lưu Bài Viết</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Create/Edit Warning -->
+    <div id="warning-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl relative">
+            <button onclick="closeModal('warning-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
+            <h3 id="warning-modal-title" class="text-2xl font-black mb-4 text-center text-rose-600">Đăng Khuyến Cáo</h3>
+            <form onsubmit="handleSaveWarning(event)" class="space-y-4">
+                <input type="hidden" id="warn-edit-index" value="">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Nội dung khuyến cáo</label>
+                    <textarea id="warn-content" rows="4" required placeholder="Nhập nội dung khuyến cáo..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-rose-500 focus:outline-none"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-xl font-semibold transition">Lưu Khuyến Cáo</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Logo URL Setting -->
+    <div id="logo-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative">
+            <button onclick="closeModal('logo-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
+            <h3 class="text-2xl font-black mb-4 text-center">Cập Nhật Logo Website</h3>
+            <form onsubmit="handleSaveLogo(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">URL Logo (HTTPS)</label>
+                    <input type="url" id="logo-url-input" placeholder="https://..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Lưu Logo</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-slate-500 text-sm">
+        <p>&copy; 2026 THoaTV (thoatv.netlify.app). Bảo lưu mọi quyền.</p>
+    </footer>
+
+    <!-- Script Logic -->
+    <script>
+        const BIN_ID = '6acb8a6fac6210605a27d086';
+        const MASTER_KEY = '$2a$10$Tm5DQurlJVbAF.8r8GiKPeN8PvFLdySO3dT40jhrzo844DBf9S5p2';
+
+        function switchView(viewName) {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-admin').classList.add('hidden');
+            document.getElementById('view-' + viewName).classList.remove('hidden');
+            if (viewName === 'home') { loadWarnings(); loadArticles(); }
+            if (viewName === 'admin') loadAccountsList();
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('flex'); document.getElementById(id).classList.add('hidden'); }
+        function switchToRegisterModal() { closeModal('login-modal'); openModal('register-modal'); }
+        function switchToLoginModal() { closeModal('register-modal'); closeModal('forgot-modal'); closeModal('forgot-username-modal'); openModal('login-modal'); }
+        function switchToForgotModal() { closeModal('login-modal'); openModal('forgot-modal'); }
+        function switchToForgotUsernameModal() { closeModal('login-modal'); openModal('forgot-username-modal'); loadRecoveryAccountsList(); }
+
+        async function fetchBinData() {
+            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                headers: { 'X-Master-Key': MASTER_KEY }
+            });
+            const json = await res.json();
+            let data = json.record;
+            if (!data.users || data.users.length === 0) {
+                data.users = [{
+                    username: 'THoaTV',
+                    password: 'THoaTV1!',
+                    role: 'admin',
+                    status: 'approved',
+                    canRename: true
+                }];
+                await updateBinData(data);
+            }
+            return data;
+        }
+
+        async function updateBinData(data) {
+            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
+                body: JSON.stringify(data)
+            });
+            return await res.json();
+        }
+
+        async function applyLogo() {
+            try {
+                const data = await fetchBinData();
+                const logoImg = document.getElementById('nav-logo-img');
+                if (data.logoUrl) {
+                    logoImg.src = data.logoUrl;
+                    logoImg.classList.remove('hidden');
+                } else {
+                    logoImg.classList.add('hidden');
+                }
+            } catch (e) {}
+        }
+
+        function openLogoModal() { openModal('logo-modal'); }
+
+        async function handleSaveLogo(e) {
+            e.preventDefault();
+            const logoUrl = document.getElementById('logo-url-input').value.trim();
+            try {
+                const data = await fetchBinData();
+                data.logoUrl = logoUrl;
+                await updateBinData(data);
+                alert('Cập nhật Logo thành công!');
+                closeModal('logo-modal');
+                applyLogo();
+            } catch (err) {
+                alert('Lỗi: ' + err.message);
+            }
+        }
+
+        async function loadWarnings() {
+            const section = document.getElementById('warnings-section');
+            const container = document.getElementById('warnings-container');
+            try {
+                const data = await fetchBinData();
+                const warnings = data.warnings || [];
+                const rawUser = localStorage.getItem('current_user');
+                const currentUser = rawUser ? JSON.parse(rawUser) : null;
+                const isAdmin = currentUser && currentUser.role === 'admin';
+
+                if (warnings.length === 0) {
+                    section.classList.add('hidden');
+                    return;
+                }
+
+                section.classList.remove('hidden');
+                container.innerHTML = warnings.map((w, index) => `
+                    <div class="bg-rose-50 border-l-4 border-rose-600 p-4 rounded-xl shadow-sm flex justify-between items-start">
+                        <div>
+                            <p class="text-rose-900 font-medium whitespace-pre-line">${w.content}</p>
+                            <span class="text-xs text-rose-500 mt-2 block">Đăng bởi: @${w.author} - ${w.date}</span>
+                        </div>
+                        ${isAdmin ? `
+                            <div class="flex space-x-1 ml-4">
+                                <button onclick="openEditWarning(${index})" class="bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded text-xs">Sửa</button>
+                                <button onclick="deleteWarning(${index})" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs">Xóa</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            } catch (e) {
+                section.classList.add('hidden');
+            }
+        }
+
+        function openWarningModal() {
+            document.getElementById('warning-modal-title').textContent = 'Đăng Khuyến Cáo';
+            document.getElementById('warn-edit-index').value = '';
+            document.getElementById('warn-content').value = '';
+            openModal('warning-modal');
+        }
+
+        async function openEditWarning(index) {
+            try {
+                const data = await fetchBinData();
+                const warn = data.warnings[index];
+                document.getElementById('warning-modal-title').textContent = 'Sửa Khuyến Cáo';
+                document.getElementById('warn-edit-index').value = index;
+                document.getElementById('warn-content').value = warn.content;
+                openModal('warning-modal');
+            } catch (err) {
+                alert('Lỗi tải khuyến cáo.');
+            }
+        }
+
+        async function handleSaveWarning(e) {
+            e.preventDefault();
+            const raw = localStorage.getItem('current_user');
+            if (!raw) return;
+            const user = JSON.parse(raw);
+            if (user.role !== 'admin') {
+                alert('Chỉ Quản trị viên mới có quyền đăng khuyến cáo!');
+                return;
+            }
+
+            const editIndex = document.getElementById('warn-edit-index').value;
+            const content = document.getElementById('warn-content').value;
+
+            try {
+                const data = await fetchBinData();
+                data.warnings = data.warnings || [];
+
+                if (editIndex === '') {
+                    data.warnings.unshift({ content, author: user.username, date: new Date().toLocaleDateString('vi-VN') });
+                    alert('Đăng khuyến cáo thành công!');
+                } else {
+                    const idx = parseInt(editIndex);
+                    data.warnings[idx] = { ...data.warnings[idx], content };
+                    alert('Cập nhật khuyến cáo thành công!');
+                }
+
+                await updateBinData(data);
+                closeModal('warning-modal');
+                loadWarnings();
+            } catch (err) {
+                alert('Lỗi: ' + err.message);
+            }
+        }
+
+        async function deleteWarning(index) {
+            if (!confirm('Bạn có chắc chắn muốn xóa khuyến cáo này không?')) return;
+            try {
+                const data = await fetchBinData();
+                data.warnings.splice(index, 1);
+                await updateBinData(data);
+                alert('Xóa khuyến cáo thành công!');
+                loadWarnings();
+            } catch (err) {
+                alert('Lỗi khi xóa khuyến cáo.');
+            }
+        }
+
+        let allUsersForRecovery = [];
+        async function loadRecoveryAccountsList() {
+            try {
+                const data = await fetchBinData();
+                allUsersForRecovery = data.users || [];
+                renderRecoveryList(allUsersForRecovery);
+            } catch (e) {
+                document.getElementById('fu-accounts-list').innerHTML = `<p class="text-xs text-red-500">Lỗi tải danh sách.</p>`;
+            }
+        }
+
+        function renderRecoveryList(users) {
+            const container = document.getElementById('fu-accounts-list');
+            if (users.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">Không tìm thấy tài khoản.</p>`;
+                return;
+            }
+            container.innerHTML = users.map(u => `
+                <div onclick="selectRecoveryAccount('${u.username}')" id="acc-item-${u.username}" class="px-3 py-1.5 text-sm rounded cursor-pointer hover:bg-indigo-50 border border-transparent transition flex justify-between items-center">
+                    <span>@${u.username}</span>
+                    <span class="text-xs text-slate-400 uppercase">${u.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}</span>
+                </div>
+            `).join('');
+        }
+
+        function filterAccountsForRecovery() {
+            const query = document.getElementById('fu-search').value.toLowerCase().trim();
+            const filtered = allUsersForRecovery.filter(u => u.username.toLowerCase().includes(query));
+            renderRecoveryList(filtered);
+        }
+
+        function selectRecoveryAccount(username) {
+            document.querySelectorAll('#fu-accounts-list > div').forEach(el => el.classList.remove('bg-indigo-100', 'border-indigo-300'));
+            const selectedEl = document.getElementById(`acc-item-${username}`);
+            if (selectedEl) selectedEl.classList.add('bg-indigo-100', 'border-indigo-300');
+            document.getElementById('fu-selected-username').value = username;
+        }
+
+        async function handleForgotUsername(e) {
+            e.preventDefault();
+            const password = document.getElementById('fu-password').value;
+            const oldUsername = document.getElementById('fu-selected-username').value;
+            const newUsername = document.getElementById('fu-new-username').value.trim();
+            const errDiv = document.getElementById('fu-error');
+            errDiv.classList.add('hidden');
+
+            if (!oldUsername) {
+                errDiv.textContent = 'Vui lòng chọn tài khoản cần đổi tên từ danh sách.';
+                errDiv.classList.remove('hidden');
+                return;
+            }
+
+            if (!/^[a-zA-Z]+$/.test(newUsername)) {
+                errDiv.textContent = 'Tên tài khoản mới chỉ được chứa chữ cái, không khoảng trắng.';
+                errDiv.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const data = await fetchBinData();
+                data.users = data.users || [];
+
+                const userIndex = data.users.findIndex(u => u.username === oldUsername);
+                if (userIndex === -1 || data.users[userIndex].password !== password) {
+                    throw new Error('Mật khẩu không chính xác hoặc tài khoản không tồn tại.');
+                }
+
+                if (data.users[userIndex].canRename === false) {
+                    throw new Error('Tính năng đổi tên của bạn đã bị Quản trị viên khóa do nghi ngờ bảo mật. Vui lòng liên hệ Quản trị viên.');
+                }
+
+                if (data.users.some(u => u.username === newUsername)) {
+                    throw new Error('Tên tài khoản mới đã tồn tại trong hệ thống.');
+                }
+
+                data.users[userIndex].username = newUsername;
+
+                if (data.articles) {
+                    data.articles = data.articles.map(art => {
+                        if (art.author === oldUsername) {
+                            return { ...art, author: newUsername };
+                        }
+                        return art;
+                    });
+                }
+
+                await updateBinData(data);
+                alert(`Đổi tên tài khoản thành công! Tên mới của bạn là: @${newUsername}. Vui lòng đăng nhập lại.`);
+                closeModal('forgot-username-modal');
+                switchToLoginModal();
+            } catch (err) {
+                errDiv.textContent = err.message;
+                errDiv.classList.remove('hidden');
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const errDiv = document.getElementById('reg-error');
+            errDiv.classList.add('hidden');
+
+            if (!/^[a-zA-Z]+$/.test(username)) {
+                errDiv.textContent = 'Tên tài khoản chỉ được chứa chữ cái, không khoảng trắng.';
+                errDiv.classList.remove('hidden');
+                return;
+            }
+
+            const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/;
+            if (!passRegex.test(password)) {
+                errDiv.textContent = 'Mật khẩu phải chứa ít nhất chữ thường, hoa, số và ký tự đặc biệt.';
+                errDiv.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const data = await fetchBinData();
+                data.users = data.users || [];
+
+                if (data.users.some(u => u.username === username)) {
+                    throw new Error('Tên tài khoản đã tồn tại.');
+                }
+
+                data.users.push({
+                    username,
+                    password,
+                    role: 'member',
+                    status: 'pending',
+                    canRename: true
+                });
+
+                await updateBinData(data);
+                alert('Đăng ký thành công! Vui lòng đợi Quản trị viên duyệt tài khoản.');
+                closeModal('register-modal');
+                switchToLoginModal();
+            } catch (err) {
+                errDiv.textContent = err.message;
+                errDiv.classList.remove('hidden');
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+            const errDiv = document.getElementById('login-error');
+            errDiv.classList.add('hidden');
+
+            try {
+                const data = await fetchBinData();
+                const users = data.users || [];
+                const user = users.find(u => u.username === username && u.password === password);
+
+                if (!user) throw new Error('Sai tên tài khoản hoặc mật khẩu.');
+                if (user.status === 'pending') throw new Error('Tài khoản của bạn đang chờ Quản trị viên duyệt.');
+
+                localStorage.setItem('current_user', JSON.stringify(user));
+                alert('Đăng nhập thành công!');
+                closeModal('login-modal');
+                checkAuthState();
+                loadWarnings();
+                loadArticles();
+            } catch (err) {
+                errDiv.textContent = err.message;
+                errDiv.classList.remove('hidden');
+            }
+        }
+
+        function checkAuthState() {
+            const raw = localStorage.getItem('current_user');
+            const authNav = document.getElementById('auth-nav');
+            const authMobileBar = document.getElementById('auth-nav-mobile-bar');
+            const adminLink = document.getElementById('nav-admin-link');
+            const createArticleBtn = document.getElementById('create-article-btn-container');
+            const adminOnlyFeatures = document.getElementById('admin-only-features');
+
+            if (raw) {
+                const user = JSON.parse(raw);
+                const roleName = user.role === 'admin' ? 'Quản trị viên' : 'Thành viên';
+                
+                authNav.innerHTML = `
+                    <span class="text-sm font-semibold">@${user.username} (${roleName})</span>
+                    <button onclick="handleLogout()" class="bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded-lg text-sm">Đăng Xuất</button>
+                `;
+
+                authMobileBar.innerHTML = `
+                    <span class="text-xs font-semibold text-slate-700">@${user.username} (${roleName})</span>
+                    <span class="text-slate-300">|</span>
+                    <button onclick="handleLogout()" class="text-xs font-bold text-indigo-600">Đăng Xuất</button>
+                `;
+
+                if (user.role === 'admin') {
+                    adminLink.classList.remove('hidden');
+                    adminOnlyFeatures.classList.remove('hidden');
+                } else {
+                    adminLink.classList.add('hidden');
+                    adminOnlyFeatures.classList.add('hidden');
+                }
+                createArticleBtn.classList.remove('hidden');
+            } else {
+                authNav.innerHTML = `
+                    <button onclick="openModal('login-modal')" class="text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-lg font-medium transition">Đăng Nhập</button>
+                    <button onclick="openModal('register-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition">Đăng Ký</button>
+                `;
+
+                authMobileBar.innerHTML = `
+                    <button onclick="openModal('login-modal')" class="text-indigo-600 text-sm font-medium">Đăng Nhập</button>
+                    <span class="text-slate-300">|</span>
+                    <button onclick="openModal('register-modal')" class="text-indigo-600 text-sm font-medium">Đăng Ký</button>
+                `;
+
+                adminLink.classList.add('hidden');
+                createArticleBtn.classList.add('hidden');
+                adminOnlyFeatures.classList.add('hidden');
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('current_user');
+            checkAuthState();
+            switchView('home');
+            alert('Đã đăng xuất.');
+        }
+
+        async function loadArticles() {
+            const container = document.getElementById('articles-container');
+            container.innerHTML = `<p class="text-slate-500 col-span-full text-center py-10">Đang tải...</p>`;
+            try {
+                const data = await fetchBinData();
+                const articles = data.articles || [];
+                const rawUser = localStorage.getItem('current_user');
+                const currentUser = rawUser ? JSON.parse(rawUser) : null;
+
+                if (articles.length === 0) {
+                    container.innerHTML = `<p class="text-slate-500 col-span-full text-center py-10">Chưa có bài viết nào.</p>`;
+                    return;
+                }
+
+                container.innerHTML = articles.map((art, index) => {
+                    const canModify = currentUser && (currentUser.role === 'admin' || currentUser.username === art.author);
+                    return `
+                        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm flex flex-col justify-between">
+                            <div>
+                                ${art.img ? `<img src="${art.img}" class="w-full h-48 object-cover">` : ''}
+                                <div class="p-6">
+                                    <h3 class="text-xl font-bold mb-2">${art.title}</h3>
+                                    <p class="text-slate-600 text-sm mb-4">${art.desc || ''}</p>
+                                    <span class="text-xs text-slate-400">Đăng bởi: @${art.author} - ${art.date}</span>
+                                </div>
+                            </div>
+                            ${canModify ? `
+                                <div class="px-6 pb-4 flex space-x-2">
+                                    <button onclick="openEditArticle(${index})" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 rounded text-xs font-semibold">Sửa</button>
+                                    <button onclick="deleteArticle(${index})" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-semibold">Xóa</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                container.innerHTML = `<p class="text-red-500 col-span-full text-center py-10">Lỗi tải dữ liệu.</p>`;
+            }
+        }
+
+        function openArticleModal() {
+            document.getElementById('article-modal-title').textContent = 'Đăng Bài Viết Mới';
+            document.getElementById('art-edit-index').value = '';
+            document.getElementById('art-title').value = '';
+            document.getElementById('art-desc').value = '';
+            document.getElementById('art-img').value = '';
+            openModal('article-modal');
+        }
+
+        async function openEditArticle(index) {
+            try {
+                const data = await fetchBinData();
+                const art = data.articles[index];
+                document.getElementById('article-modal-title').textContent = 'Sửa Bài Viết';
+                document.getElementById('art-edit-index').value = index;
+                document.getElementById('art-title').value = art.title;
+                document.getElementById('art-desc').value = art.desc;
+                document.getElementById('art-img').value = art.img || '';
+                openModal('article-modal');
+            } catch (err) {
+                alert('Lỗi tải bài viết.');
+            }
+        }
+
+        async function handleSaveArticle(e) {
+            e.preventDefault();
+            const raw = localStorage.getItem('current_user');
+            if (!raw) { alert('Vui lòng đăng nhập.'); return; }
+            const user = JSON.parse(raw);
+
+            const editIndex = document.getElementById('art-edit-index').value;
+            const title = document.getElementById('art-title').value;
+            const desc = document.getElementById('art-desc').value;
+            const img = document.getElementById('art-img').value;
+
+            try {
+                const data = await fetchBinData();
+                data.articles = data.articles || [];
+
+                if (editIndex === '') {
+                    data.articles.unshift({ title, desc, img, author: user.username, date: new Date().toLocaleDateString('vi-VN') });
+                    alert('Đăng bài thành công!');
+                } else {
+                    const idx = parseInt(editIndex);
+                    if (user.role !== 'admin' && data.articles[idx].author !== user.username) {
+                        alert('Bạn chỉ có quyền sửa bài viết của chính mình!');
+                        return;
+                    }
+                    data.articles[idx] = { ...data.articles[idx], title, desc, img };
+                    alert('Cập nhật bài viết thành công!');
+                }
+
+                await updateBinData(data);
+                closeModal('article-modal');
+                loadArticles();
+            } catch (err) {
+                alert('Lỗi: ' + err.message);
+            }
+        }
+
+        async function deleteArticle(index) {
+            if (!confirm('Bạn có chắc chắn muốn xóa bài viết này không?')) return;
+            const raw = localStorage.getItem('current_user');
+            if (!raw) return;
+            const user = JSON.parse(raw);
+
+            try {
+                const data = await fetchBinData();
+                const art = data.articles[index];
+                if (user.role !== 'admin' && art.author !== user.username) {
+                    alert('Bạn chỉ có quyền xóa bài viết của chính mình!');
+                    return;
+                }
+                data.articles.splice(index, 1);
+                await updateBinData(data);
+                alert('Xóa bài thành công!');
+                loadArticles();
+            } catch (err) {
+                alert('Lỗi khi xóa bài.');
+            }
+        }
+
+        async function loadAccountsList() {
+            const container = document.getElementById('accounts-list-container');
+            container.innerHTML = `<p class="text-slate-500">Đang tải...</p>`;
+            try {
+                const data = await fetchBinData();
+                const users = data.users || [];
+                container.innerHTML = `
+                    <table class="w-full text-left border-collapse min-w-[500px]">
+                        <thead>
+                            <tr class="border-b text-sm text-slate-500">
+                                <th class="py-2">Tài khoản</th>
+                                <th class="py-2">Trạng thái</th>
+                                <th class="py-2">Vai trò</th>
+                                <th class="py-2">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${users.map(u => `
+                                <tr class="border-b">
+                                    <td class="py-3 font-semibold">@${u.username}</td>
+                                    <td class="py-3"><span class="px-2 py-1 text-xs rounded ${u.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">${u.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}</span></td>
+                                    <td class="py-3 uppercase text-xs font-bold">${u.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}</td>
+                                    <td class="py-3 space-x-1 space-y-1">
+                                        ${u.status === 'pending' ? `<button onclick="approveUser('${u.username}')" class="bg-green-600 text-white px-2.5 py-1 rounded text-xs">Duyệt</button>` : ''}
+                                        <button onclick="toggleRenameLock('${u.username}')" class="px-2.5 py-1 rounded text-xs text-white ${u.canRename !== false ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'}">
+                                            ${u.canRename !== false ? 'Được đổi tên' : 'Đã khóa'}
+                                        </button>
+                                        <button onclick="openAdminChangePass('${u.username}')" class="bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 rounded text-xs">Đổi MK</button>
+                                        ${u.role !== 'admin' ? `<button onclick="makeAdmin('${u.username}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded text-xs">Chuyển Admin</button>` : ''}
+                                        <button onclick="deleteUser('${u.username}')" class="bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded text-xs">Xóa</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (err) {
+                container.innerHTML = `<p class="text-red-500">Lỗi tải danh sách tài khoản.</p>`;
+            }
+        }
+
+        async function approveUser(username) {
+            const data = await fetchBinData();
+            data.users = data.users.map(u => u.username === username ? {...u, status: 'approved'} : u);
+            await updateBinData(data);
+            loadAccountsList();
+        }
+
+        async function toggleRenameLock(username) {
+            const data = await fetchBinData();
+            data.users = data.users.map(u => {
+                if (u.username === username) {
+                    const current = u.canRename !== false;
+                    return {...u, canRename: !current};
+                }
+                return u;
+            });
+            await updateBinData(data);
+            loadAccountsList();
+        }
+
+        function openAdminChangePass(username) {
+            document.getElementById('admin-target-username').value = username;
+            document.getElementById('target-user-label').textContent = `Đổi mật khẩu cho tài khoản: @${username}`;
+            document.getElementById('admin-new-password').value = '';
+            openModal('admin-change-pass-modal');
+        }
+
+        async function handleAdminChangePassword(e) {
+            e.preventDefault();
+            const username = document.getElementById('admin-target-username').value;
+            const newPassword = document.getElementById('admin-new-password').value;
+
+            const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/;
+            if (!passRegex.test(newPassword)) {
+                alert('Mật khẩu phải chứa ít nhất chữ thường, hoa, số và ký tự đặc biệt.');
+                return;
+            }
+
+            try {
+                const data = await fetchBinData();
+                data.users = data.users.map(u => {
+                    if (u.username === username) {
+                        return { ...u, password: newPassword };
+                    }
+                    return u;
+                });
+                await updateBinData(data);
+                alert(`Đã đổi mật khẩu thành công cho tài khoản @${username}!`);
+                closeModal('admin-change-pass-modal');
+            } catch (err) {
+                alert('Lỗi: ' + err.message);
+            }
+        }
+
+        async function deleteUser(username) {
+            if (!confirm(`Xóa tài khoản @${username}?`)) return;
+            const data = await fetchBinData();
+            data.users = data.users.filter(u => u.username !== username);
+            await updateBinData(data);
+            loadAccountsList();
+        }
+
+        async function makeAdmin(newAdminUsername) {
+            if (!confirm(`Chuyển quyền Quản trị viên cho @${newAdminUsername}? Bạn sẽ trở thành tài khoản thường.`)) return;
+            const data = await fetchBinData();
+            data.users = data.users.map(u => {
+                if (u.username === newAdminUsername) return {...u, role: 'admin', status: 'approved'};
+                return {...u, role: 'member'};
+            });
+            await updateBinData(data);
+            alert('Đã chuyển quyền Quản trị viên thành công! Vui lòng đăng nhập lại.');
+            handleLogout();
+        }
+
+        window.onload = () => {
+            applyLogo();
+            checkAuthState();
+            loadWarnings();
+            loadArticles();
+        };
+    </script>
+</body>
+</html>
