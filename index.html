@@ -63,6 +63,19 @@
                 </div>
             </section>
 
+            <!-- Khu vực hiển thị Khuyến nghị cộng đồng -->
+            <section id="recommendations-section" class="space-y-4">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+                    <h2 class="text-xl font-bold text-indigo-600 flex items-center gap-2">
+                        <span>💡</span> Khuyến Nghị Cộng Đồng
+                    </h2>
+                    <button onclick="openRecommendationModal()" id="add-recommendation-btn" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition">+ Thêm Khuyến Nghị</button>
+                </div>
+                <div id="recommendations-container" class="space-y-3">
+                    <p class="text-slate-500 text-center py-4 text-sm">Chưa có khuyến nghị cộng đồng nào.</p>
+                </div>
+            </section>
+
             <section>
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                     <h2 class="text-2xl font-bold text-slate-800 border-l-4 border-indigo-600 pl-3">Bài Viết Mới Nhất</h2>
@@ -242,6 +255,22 @@
         </div>
     </div>
 
+    <!-- MODAL: Create/Edit Recommendation (Khuyến nghị cộng đồng) -->
+    <div id="recommendation-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl relative">
+            <button onclick="closeModal('recommendation-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
+            <h3 id="recommendation-modal-title" class="text-2xl font-black mb-4 text-center text-indigo-600">Đăng Khuyến Nghị Cộng Đồng</h3>
+            <form onsubmit="handleSaveRecommendation(event)" class="space-y-4">
+                <input type="hidden" id="rec-edit-index" value="">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Nội dung khuyến nghị</label>
+                    <textarea id="rec-content" rows="4" required placeholder="Nhập nội dung khuyến nghị của bạn..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Lưu Khuyến Nghị</button>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL: Logo URL Setting -->
     <div id="logo-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative">
@@ -271,7 +300,7 @@
             document.getElementById('view-home').classList.add('hidden');
             document.getElementById('view-admin').classList.add('hidden');
             document.getElementById('view-' + viewName).classList.remove('hidden');
-            if (viewName === 'home') { loadWarnings(); loadArticles(); }
+            if (viewName === 'home') { loadWarnings(); loadRecommendations(); loadArticles(); }
             if (viewName === 'admin') loadAccountsList();
         }
 
@@ -442,6 +471,120 @@
             }
         }
 
+        // --- KHUYẾN NGHỊ CỘNG ĐỒNG (RECOMMENDATIONS) ---
+        async function loadRecommendations() {
+            const container = document.getElementById('recommendations-container');
+            try {
+                const data = await fetchBinData();
+                const recommendations = data.recommendations || [];
+                const rawUser = localStorage.getItem('current_user');
+                const currentUser = rawUser ? JSON.parse(rawUser) : null;
+
+                if (recommendations.length === 0) {
+                    container.innerHTML = `<p class="text-slate-500 text-center py-4 text-sm">Chưa có khuyến nghị cộng đồng nào.</p>`;
+                    return;
+                }
+
+                container.innerHTML = recommendations.map((rec, index) => {
+                    const canModify = currentUser && (currentUser.role === 'admin' || currentUser.username === rec.author);
+                    return `
+                        <div class="bg-indigo-50/60 border-l-4 border-indigo-600 p-4 rounded-xl shadow-sm flex justify-between items-start">
+                            <div>
+                                <p class="text-indigo-950 font-medium whitespace-pre-line text-sm md:text-base">${rec.content}</p>
+                                <span class="text-xs text-indigo-500 mt-2 block">Đăng bởi: @${rec.author} - ${rec.date}</span>
+                            </div>
+                            ${canModify ? `
+                                <div class="flex space-x-1 ml-4 flex-shrink-0">
+                                    <button onclick="openEditRecommendation(${index})" class="bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded text-xs">Sửa</button>
+                                    <button onclick="deleteRecommendation(${index})" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs">Xóa</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                container.innerHTML = `<p class="text-red-500 text-center py-4 text-sm">Lỗi tải khuyến nghị.</p>`;
+            }
+        }
+
+        function openRecommendationModal() {
+            const raw = localStorage.getItem('current_user');
+            if (!raw) { alert('Vui lòng đăng nhập để thêm khuyến nghị.'); openModal('login-modal'); return; }
+            document.getElementById('recommendation-modal-title').textContent = 'Đăng Khuyến Nghị Cộng Đồng';
+            document.getElementById('rec-edit-index').value = '';
+            document.getElementById('rec-content').value = '';
+            openModal('recommendation-modal');
+        }
+
+        async function openEditRecommendation(index) {
+            try {
+                const data = await fetchBinData();
+                const rec = data.recommendations[index];
+                document.getElementById('recommendation-modal-title').textContent = 'Sửa Khuyến Nghị';
+                document.getElementById('rec-edit-index').value = index;
+                document.getElementById('rec-content').value = rec.content;
+                openModal('recommendation-modal');
+            } catch (err) {
+                alert('Lỗi tải khuyến nghị.');
+            }
+        }
+
+        async function handleSaveRecommendation(e) {
+            e.preventDefault();
+            const raw = localStorage.getItem('current_user');
+            if (!raw) return;
+            const user = JSON.parse(raw);
+
+            const editIndex = document.getElementById('rec-edit-index').value;
+            const content = document.getElementById('rec-content').value;
+
+            try {
+                const data = await fetchBinData();
+                data.recommendations = data.recommendations || [];
+
+                if (editIndex === '') {
+                    data.recommendations.unshift({ content, author: user.username, date: new Date().toLocaleDateString('vi-VN') });
+                    alert('Đăng khuyến nghị thành công!');
+                } else {
+                    const idx = parseInt(editIndex);
+                    if (user.role !== 'admin' && data.recommendations[idx].author !== user.username) {
+                        alert('Bạn chỉ có quyền sửa khuyến nghị của chính mình!');
+                        return;
+                    }
+                    data.recommendations[idx] = { ...data.recommendations[idx], content };
+                    alert('Cập nhật khuyến nghị thành công!');
+                }
+
+                await updateBinData(data);
+                closeModal('recommendation-modal');
+                loadRecommendations();
+            } catch (err) {
+                alert('Lỗi: ' + err.message);
+            }
+        }
+
+        async function deleteRecommendation(index) {
+            if (!confirm('Bạn có chắc chắn muốn xóa khuyến nghị này không?')) return;
+            const raw = localStorage.getItem('current_user');
+            if (!raw) return;
+            const user = JSON.parse(raw);
+
+            try {
+                const data = await fetchBinData();
+                const rec = data.recommendations[index];
+                if (user.role !== 'admin' && rec.author !== user.username) {
+                    alert('Bạn chỉ có quyền xóa khuyến nghị của chính mình!');
+                    return;
+                }
+                data.recommendations.splice(index, 1);
+                await updateBinData(data);
+                alert('Xóa khuyến nghị thành công!');
+                loadRecommendations();
+            } catch (err) {
+                alert('Lỗi khi xóa khuyến nghị.');
+            }
+        }
+
         let allUsersForRecovery = [];
         async function loadRecoveryAccountsList() {
             try {
@@ -527,6 +670,15 @@
                         return art;
                     });
                 }
+                
+                if (data.recommendations) {
+                    data.recommendations = data.recommendations.map(rec => {
+                        if (rec.author === oldUsername) {
+                            return { ...rec, author: newUsername };
+                        }
+                        return rec;
+                    });
+                }
 
                 await updateBinData(data);
                 alert(`Đổi tên tài khoản thành công! Tên mới của bạn là: @${newUsername}. Vui lòng đăng nhập lại.`);
@@ -604,6 +756,7 @@
                 closeModal('login-modal');
                 checkAuthState();
                 loadWarnings();
+                loadRecommendations();
                 loadArticles();
             } catch (err) {
                 errDiv.textContent = err.message;
@@ -618,6 +771,7 @@
             const adminLink = document.getElementById('nav-admin-link');
             const createArticleBtn = document.getElementById('create-article-btn-container');
             const adminOnlyFeatures = document.getElementById('admin-only-features');
+            const addRecommendationBtn = document.getElementById('add-recommendation-btn');
 
             if (raw) {
                 const user = JSON.parse(raw);
@@ -642,6 +796,7 @@
                     adminOnlyFeatures.classList.add('hidden');
                 }
                 createArticleBtn.classList.remove('hidden');
+                addRecommendationBtn.classList.remove('hidden');
             } else {
                 authNav.innerHTML = `
                     <button onclick="openModal('login-modal')" class="text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-lg font-medium transition">Đăng Nhập</button>
@@ -657,6 +812,7 @@
                 adminLink.classList.add('hidden');
                 createArticleBtn.classList.add('hidden');
                 adminOnlyFeatures.classList.add('hidden');
+                addRecommendationBtn.classList.add('hidden');
             }
         }
 
@@ -908,6 +1064,7 @@
             applyLogo();
             checkAuthState();
             loadWarnings();
+            loadRecommendations();
             loadArticles();
         };
     </script>
