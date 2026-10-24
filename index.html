@@ -22,6 +22,7 @@
             <nav class="flex flex-wrap justify-center items-center gap-4 md:space-x-6">
                 <a href="#" onclick="switchView('home')" class="text-slate-600 hover:text-indigo-600 font-medium transition text-sm md:text-base">Trang Chủ</a>
                 <a href="https://thoatv-lichphatsong.vercel.app" target="_blank" class="text-slate-600 hover:text-indigo-600 font-medium transition text-sm md:text-base">Lịch Phát Sóng</a>
+                <a href="https://hue.gov.vn/vi-vn/Trang-chu/He-thong-van-ban-phap-luat/doc/all?utm_source=chatgpt.com" target="_blank" class="text-slate-600 hover:text-indigo-600 font-medium transition text-sm md:text-base">Tra Cứu Văn Bản</a>
                 <a href="mailto:daithoatv@gmail.com?subject=Ph%E1%BA%A3n%20%C3%81nh%20-%20THoaTV" class="text-slate-600 hover:text-indigo-600 font-medium transition text-sm md:text-base">Phản Ánh</a>
                 <div id="nav-admin-link" class="hidden">
                     <a href="#" onclick="switchView('admin')" class="text-indigo-600 font-bold hover:underline text-sm md:text-base">Quản Trị</a>
@@ -255,7 +256,7 @@
         </div>
     </div>
 
-    <!-- MODAL: Create/Edit Recommendation (Khuyến nghị cộng đồng) -->
+    <!-- MODAL: Create/Edit Recommendation -->
     <div id="recommendation-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
         <div class="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl relative">
             <button onclick="closeModal('recommendation-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
@@ -471,7 +472,6 @@
             }
         }
 
-        // --- KHUYẾN NGHỊ CỘNG ĐỒNG (RECOMMENDATIONS) ---
         async function loadRecommendations() {
             const container = document.getElementById('recommendations-container');
             try {
