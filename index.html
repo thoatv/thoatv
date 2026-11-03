@@ -6,6 +6,13 @@
     <title>THoaTV - Kênh Thông Tin & Giải Trí</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function() {
+            emailjs.init("qzL3Psz5UVwGWWa0v");
+        })();
+    </script>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
 
@@ -29,14 +36,14 @@
                 </div>
             </nav>
 
-            <!-- Thanh Auth trên Máy tính (chỉ hiện trên desktop) -->
+            <!-- Thanh Auth trên Máy tính -->
             <div id="auth-nav" class="hidden md:flex items-center space-x-3">
                 <button onclick="openModal('login-modal')" class="text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-lg font-medium transition">Đăng Nhập</button>
                 <button onclick="openModal('register-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition">Đăng Ký</button>
             </div>
         </div>
 
-        <!-- Thanh Auth trên Điện thoại (chỉ hiện trên mobile) -->
+        <!-- Thanh Auth trên Điện thoại -->
         <div id="auth-nav-mobile-bar" class="md:hidden bg-slate-100 px-4 py-2.5 flex justify-center items-center space-x-3 border-t border-slate-200">
             <button onclick="openModal('login-modal')" class="text-indigo-600 text-sm font-medium">Đăng Nhập</button>
             <span class="text-slate-300">|</span>
@@ -54,17 +61,15 @@
                 <p class="text-base md:text-lg opacity-90 max-w-2xl mx-auto">Nơi cập nhật thông tin, tin tức và lịch phát sóng nhanh chóng.</p>
             </section>
 
-            <!-- Khu vực hiển thị Khuyến cáo từ Quản trị viên -->
+            <!-- Khuyến cáo từ Quản trị viên -->
             <section id="warnings-section" class="space-y-4 hidden">
                 <h2 class="text-xl font-bold text-rose-600 flex items-center gap-2">
                     <span>⚠️</span> Khuyến Cáo Quan Trọng Từ Quản Trị Viên
                 </h2>
-                <div id="warnings-container" class="space-y-3">
-                    <!-- Khuyến cáo sẽ được render ở đây -->
-                </div>
+                <div id="warnings-container" class="space-y-3"></div>
             </section>
 
-            <!-- Khu vực hiển thị Khuyến nghị cộng đồng -->
+            <!-- Khuyến nghị cộng đồng -->
             <section id="recommendations-section" class="space-y-4">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
                     <h2 class="text-xl font-bold text-indigo-600 flex items-center gap-2">
@@ -98,7 +103,7 @@
         <div id="view-admin" class="hidden space-y-8">
             <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
                 <h2 class="text-2xl font-bold text-slate-800 mb-2">Bảng Quản Trị Hệ Thống (Quản trị viên)</h2>
-                <p class="text-slate-500 text-sm mb-6">Quản lý duyệt tài khoản, khóa/mở quyền đổi tên, đổi mật khẩu thành viên, xóa tài khoản và chuyển quyền Quản trị viên.</p>
+                <p class="text-slate-500 text-sm mb-6">Quản lý duyệt tài khoản, khóa/mở quyền đổi tên, đổi mật khẩu, sửa email thành viên, xóa tài khoản và chuyển quyền Quản trị viên.</p>
                 
                 <h3 class="text-lg font-bold text-slate-700 mb-4">Danh Sách Tài Khoản Hệ Thống</h3>
                 <div id="accounts-list-container" class="overflow-x-auto">
@@ -148,6 +153,10 @@
                     <input type="text" id="reg-username" required placeholder="vd: thoatvuser" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                 </div>
                 <div>
+                    <label class="block text-sm font-medium mb-1">Email liên kết nhận mã OTP</label>
+                    <input type="email" id="reg-email" required placeholder="vd: daithoatv@gmail.com" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div>
                     <label class="block text-sm font-medium mb-1">Mật khẩu</label>
                     <input type="password" id="reg-password" required placeholder="vd: Qw1!Qw1!" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                 </div>
@@ -158,13 +167,41 @@
         </div>
     </div>
 
-    <!-- MODAL: Forgot Password -->
+    <!-- MODAL: Forgot Password (Quên mật khẩu qua OTP Email) -->
     <div id="forgot-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative">
             <button onclick="closeModal('forgot-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
-            <h3 class="text-2xl font-black mb-2 text-center">Quên Mật Khẩu</h3>
-            <p class="text-sm text-slate-600 text-center mb-6">Vui lòng liên hệ trực tiếp với <b>Quản trị viên</b> hệ thống để được hỗ trợ đổi mật khẩu mới.</p>
-            <button onclick="closeModal('forgot-modal'); switchToLoginModal();" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 py-2.5 rounded-xl font-semibold transition">Đã hiểu, quay lại Đăng Nhập</button>
+            <h3 class="text-2xl font-black mb-2 text-center text-indigo-600">Khôi Phục Mật Khẩu</h3>
+            
+            <!-- Bước 1: Nhập tài khoản/email để nhận mã -->
+            <div id="forgot-step-1">
+                <p class="text-xs text-slate-500 text-center mb-4">Nhập tên tài khoản hoặc email đăng ký để nhận mã xác thực OTP.</p>
+                <form onsubmit="handleSendOTP(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Tên tài khoản hoặc Email</label>
+                        <input type="text" id="fp-identity" required placeholder="vd: daithoatv@gmail.com" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+                    <div id="fp-error-1" class="text-red-500 text-sm hidden"></div>
+                    <button type="submit" id="fp-send-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Gửi Mã Xác Thực</button>
+                </form>
+            </div>
+
+            <!-- Bước 2: Nhập mã OTP và Mật khẩu mới -->
+            <div id="forgot-step-2" class="hidden">
+                <p class="text-xs text-indigo-600 text-center mb-4">Mã xác thực đã được gửi tới email của bạn. Vui lòng kiểm tra hộp thư.</p>
+                <form onsubmit="handleVerifyAndReset(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Nhập mã OTP (gồm 6 chữ số)</label>
+                        <input type="text" id="fp-otp-input" required placeholder="Nhập mã OTP..." class="w-full px-4 py-2 border rounded-lg tracking-widest text-center font-bold text-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Mật khẩu mới</label>
+                        <input type="password" id="fp-new-password" required placeholder="vd: Qw1!Qw1!" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+                    <div id="fp-error-2" class="text-red-500 text-sm hidden"></div>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl font-semibold transition">Xác Nhận Đổi Mật Khẩu</button>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -212,6 +249,23 @@
                     <input type="password" id="admin-new-password" required placeholder="vd: Qw1!Qw1!" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                 </div>
                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Xác Nhận Đổi Mật Khẩu</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Admin Edit Member Email -->
+    <div id="admin-edit-email-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative">
+            <button onclick="closeModal('admin-edit-email-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
+            <h3 class="text-2xl font-black mb-2 text-center">Sửa Email Thành Viên</h3>
+            <p id="target-email-user-label" class="text-xs text-indigo-600 font-semibold text-center mb-4"></p>
+            <form onsubmit="handleAdminSaveEmail(event)" class="space-y-4">
+                <input type="hidden" id="admin-email-target-username">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Email mới</label>
+                    <input type="email" id="admin-new-email" required placeholder="vd: daithoatv@gmail.com" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Lưu Email Mới</button>
             </form>
         </div>
     </div>
@@ -309,7 +363,14 @@
         function closeModal(id) { document.getElementById(id).classList.remove('flex'); document.getElementById(id).classList.add('hidden'); }
         function switchToRegisterModal() { closeModal('login-modal'); openModal('register-modal'); }
         function switchToLoginModal() { closeModal('register-modal'); closeModal('forgot-modal'); closeModal('forgot-username-modal'); openModal('login-modal'); }
-        function switchToForgotModal() { closeModal('login-modal'); openModal('forgot-modal'); }
+        function switchToForgotModal() { 
+            closeModal('login-modal'); 
+            document.getElementById('forgot-step-1').classList.remove('hidden');
+            document.getElementById('forgot-step-2').classList.add('hidden');
+            document.getElementById('fp-identity').value = '';
+            document.getElementById('fp-error-1').classList.add('hidden');
+            openModal('forgot-modal'); 
+        }
         function switchToForgotUsernameModal() { closeModal('login-modal'); openModal('forgot-username-modal'); loadRecoveryAccountsList(); }
 
         async function fetchBinData() {
@@ -320,7 +381,8 @@
             let data = json.record;
             if (!data.users || data.users.length === 0) {
                 data.users = [{
-                    username: 'THoaTV',
+                    username: 'tranleebaoduy',
+                    email: 'daithoatv@gmail.com',
                     password: 'THoaTV1!',
                     role: 'admin',
                     status: 'approved',
@@ -367,6 +429,101 @@
                 applyLogo();
             } catch (err) {
                 alert('Lỗi: ' + err.message);
+            }
+        }
+
+        // --- XỬ LÝ QUÊN MẬT KHẨU VÀ GỬI MÃ OTP QUA EMAILJS ---
+        let targetUserForReset = null;
+
+        async function handleSendOTP(e) {
+            e.preventDefault();
+            const identity = document.getElementById('fp-identity').value.trim();
+            const errDiv = document.getElementById('fp-error-1');
+            const sendBtn = document.getElementById('fp-send-btn');
+            errDiv.classList.add('hidden');
+
+            try {
+                sendBtn.textContent = 'Đang gửi mã...';
+                sendBtn.disabled = true;
+
+                const data = await fetchBinData();
+                const users = data.users || [];
+                
+                const user = users.find(u => u.username === identity || u.email === identity);
+                if (!user) {
+                    throw new Error('Không tìm thấy tài khoản hoặc email này trong hệ thống.');
+                }
+
+                if (!user.email) {
+                    throw new Error('Tài khoản này chưa được liên kết email. Vui lòng liên hệ Admin.');
+                }
+
+                const otp = Math.floor(100000 + Math.random() * 900000).toString();
+                user.otpCode = otp;
+                user.otpExpiry = Date.now() + 5 * 60 * 1000;
+                
+                await updateBinData(data);
+                targetUserForReset = user.username;
+
+                const templateParams = {
+                    to_name: user.username,
+                    to_email: user.email,
+                    otp_code: otp
+                };
+
+                await emailjs.send('service_6p50yqk', 'template_ldblnii', templateParams);
+
+                alert(`Mã xác thực OTP đã được gửi đến email: ${user.email}`);
+                document.getElementById('forgot-step-1').classList.add('hidden');
+                document.getElementById('forgot-step-2').classList.remove('hidden');
+
+            } catch (err) {
+                errDiv.textContent = err.message;
+                errDiv.classList.remove('hidden');
+            } finally {
+                sendBtn.textContent = 'Gửi Mã Xác Thực';
+                sendBtn.disabled = false;
+            }
+        }
+
+        async function handleVerifyAndReset(e) {
+            e.preventDefault();
+            const inputOtp = document.getElementById('fp-otp-input').value.trim();
+            const newPassword = document.getElementById('fp-new-password').value;
+            const errDiv = document.getElementById('fp-error-2');
+            errDiv.classList.add('hidden');
+
+            const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/;
+            if (!passRegex.test(newPassword)) {
+                errDiv.textContent = 'Mật khẩu phải chứa ít nhất chữ thường, hoa, số và ký tự đặc biệt.';
+                errDiv.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const data = await fetchBinData();
+                const user = data.users.find(u => u.username === targetUserForReset);
+
+                if (!user || user.otpCode !== inputOtp) {
+                    throw new Error('Mã OTP không chính xác.');
+                }
+
+                if (Date.now() > user.otpExpiry) {
+                    throw new Error('Mã OTP đã hết hạn. Vui lòng thử lại từ đầu.');
+                }
+
+                user.password = newPassword;
+                delete user.otpCode;
+                delete user.otpExpiry;
+
+                await updateBinData(data);
+                alert('Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại.');
+                closeModal('forgot-modal');
+                switchToLoginModal();
+
+            } catch (err) {
+                errDiv.textContent = err.message;
+                errDiv.classList.remove('hidden');
             }
         }
 
@@ -653,7 +810,7 @@
                 }
 
                 if (data.users[userIndex].canRename === false) {
-                    throw new Error('Tính năng đổi tên của bạn đã bị Quản trị viên khóa do nghi ngờ bảo mật. Vui lòng liên hệ Quản trị viên.');
+                    throw new Error('Tính năng đổi tên của bạn đã bị Quản trị viên khóa do nghi ngờ bảo mật.');
                 }
 
                 if (data.users.some(u => u.username === newUsername)) {
@@ -663,25 +820,15 @@
                 data.users[userIndex].username = newUsername;
 
                 if (data.articles) {
-                    data.articles = data.articles.map(art => {
-                        if (art.author === oldUsername) {
-                            return { ...art, author: newUsername };
-                        }
-                        return art;
-                    });
+                    data.articles = data.articles.map(art => art.author === oldUsername ? { ...art, author: newUsername } : art);
                 }
                 
                 if (data.recommendations) {
-                    data.recommendations = data.recommendations.map(rec => {
-                        if (rec.author === oldUsername) {
-                            return { ...rec, author: newUsername };
-                        }
-                        return rec;
-                    });
+                    data.recommendations = data.recommendations.map(rec => rec.author === oldUsername ? { ...rec, author: newUsername } : rec);
                 }
 
                 await updateBinData(data);
-                alert(`Đổi tên tài khoản thành công! Tên mới của bạn là: @${newUsername}. Vui lòng đăng nhập lại.`);
+                alert(`Đổi tên thành công! Tên mới: @${newUsername}. Vui lòng đăng nhập lại.`);
                 closeModal('forgot-username-modal');
                 switchToLoginModal();
             } catch (err) {
@@ -693,6 +840,7 @@
         async function handleRegister(e) {
             e.preventDefault();
             const username = document.getElementById('reg-username').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
             const password = document.getElementById('reg-password').value;
             const errDiv = document.getElementById('reg-error');
             errDiv.classList.add('hidden');
@@ -718,8 +866,13 @@
                     throw new Error('Tên tài khoản đã tồn tại.');
                 }
 
+                if (data.users.some(u => u.email === email)) {
+                    throw new Error('Email này đã được sử dụng cho tài khoản khác.');
+                }
+
                 data.users.push({
                     username,
+                    email,
                     password,
                     role: 'member',
                     status: 'pending',
@@ -956,6 +1109,7 @@
                         <thead>
                             <tr class="border-b text-sm text-slate-500">
                                 <th class="py-2">Tài khoản</th>
+                                <th class="py-2">Email</th>
                                 <th class="py-2">Trạng thái</th>
                                 <th class="py-2">Vai trò</th>
                                 <th class="py-2">Hành động</th>
@@ -965,6 +1119,7 @@
                             ${users.map(u => `
                                 <tr class="border-b">
                                     <td class="py-3 font-semibold">@${u.username}</td>
+                                    <td class="py-3 text-slate-600 text-sm">${u.email || 'Chưa có'}</td>
                                     <td class="py-3"><span class="px-2 py-1 text-xs rounded ${u.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">${u.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}</span></td>
                                     <td class="py-3 uppercase text-xs font-bold">${u.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}</td>
                                     <td class="py-3 space-x-1 space-y-1">
@@ -973,6 +1128,7 @@
                                             ${u.canRename !== false ? 'Được đổi tên' : 'Đã khóa'}
                                         </button>
                                         <button onclick="openAdminChangePass('${u.username}')" class="bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 rounded text-xs">Đổi MK</button>
+                                        <button onclick="openAdminEditEmail('${u.username}', '${u.email || ''}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded text-xs">Sửa Email</button>
                                         ${u.role !== 'admin' ? `<button onclick="makeAdmin('${u.username}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded text-xs">Chuyển Admin</button>` : ''}
                                         <button onclick="deleteUser('${u.username}')" class="bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded text-xs">Xóa</button>
                                     </td>
@@ -1013,6 +1169,35 @@
             openModal('admin-change-pass-modal');
         }
 
+        function openAdminEditEmail(username, currentEmail) {
+            document.getElementById('admin-email-target-username').value = username;
+            document.getElementById('target-email-user-label').textContent = `Đổi email cho tài khoản: @${username}`;
+            document.getElementById('admin-new-email').value = currentEmail;
+            openModal('admin-edit-email-modal');
+        }
+
+        async function handleAdminSaveEmail(e) {
+            e.preventDefault();
+            const username = document.getElementById('admin-email-target-username').value;
+            const newEmail = document.getElementById('admin-new-email').value.trim();
+
+            try {
+                const data = await fetchBinData();
+                data.users = data.users.map(u => {
+                    if (u.username === username) {
+                        return { ...u, email: newEmail };
+                    }
+                    return u;
+                });
+                await updateBinData(data);
+                alert(`Đã cập nhật email thành công cho tài khoản @${username}!`);
+                closeModal('admin-edit-email-modal');
+                loadAccountsList();
+            } catch (err) {
+                alert('Lỗi: ' + err.message);
+            }
+        }
+
         async function handleAdminChangePassword(e) {
             e.preventDefault();
             const username = document.getElementById('admin-target-username').value;
@@ -1026,12 +1211,7 @@
 
             try {
                 const data = await fetchBinData();
-                data.users = data.users.map(u => {
-                    if (u.username === username) {
-                        return { ...u, password: newPassword };
-                    }
-                    return u;
-                });
+                data.users = data.users.map(u => u.username === username ? { ...u, password: newPassword } : u);
                 await updateBinData(data);
                 alert(`Đã đổi mật khẩu thành công cho tài khoản @${username}!`);
                 closeModal('admin-change-pass-modal');
@@ -1051,10 +1231,7 @@
         async function makeAdmin(newAdminUsername) {
             if (!confirm(`Chuyển quyền Quản trị viên cho @${newAdminUsername}? Bạn sẽ trở thành tài khoản thường.`)) return;
             const data = await fetchBinData();
-            data.users = data.users.map(u => {
-                if (u.username === newAdminUsername) return {...u, role: 'admin', status: 'approved'};
-                return {...u, role: 'member'};
-            });
+            data.users = data.users.map(u => u.username === newAdminUsername ? {...u, role: 'admin', status: 'approved'} : {...u, role: 'member'});
             await updateBinData(data);
             alert('Đã chuyển quyền Quản trị viên thành công! Vui lòng đăng nhập lại.');
             handleLogout();
