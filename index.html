@@ -146,7 +146,7 @@
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-800 mb-1">Bảng Quản Trị Hệ Thống (Quản trị viên)</h2>
-                        <p class="text-slate-500 text-sm">Quản lý duyệt tài khoản, trạng thái VNeID, khóa/mở quyền đổi tên, đổi mật khẩu và thông báo chung.</p>
+                        <p class="text-slate-500 text-sm">Quản lý duyệt tài khoản, khóa/mở quyền đổi tên, đổi mật khẩu, sửa email thành viên, xóa tài khoản, xem bài viết đã lên lịch và đăng thông báo chung.</p>
                     </div>
                     <div class="flex gap-2 flex-shrink-0">
                         <button onclick="openOperatingHoursModal()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">⚙️ Sửa Giờ Hoạt Động</button>
@@ -154,7 +154,7 @@
                     </div>
                 </div>
                 
-                <h3 class="text-lg font-bold text-slate-700 mb-4">Danh Sách Tài Khoản & Trạng Thái VNeID</h3>
+                <h3 class="text-lg font-bold text-slate-700 mb-4">Danh Sách Tài Khoản Hệ Thống</h3>
                 <div id="accounts-list-container" class="overflow-x-auto mb-8">
                     <p class="text-slate-500">Đang tải danh sách tài khoản...</p>
                 </div>
@@ -242,15 +242,6 @@
                 <div id="login-error" class="text-red-500 text-sm hidden"></div>
                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Đăng Nhập</button>
             </form>
-
-            <!-- Nút Đăng nhập VNeID -->
-            <div class="mt-4 pt-4 border-t border-slate-150">
-                <button onclick="handleVNeIDLogin()" class="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl font-semibold transition text-sm">
-                    <span class="bg-white text-red-600 font-black px-1.5 py-0.5 rounded text-xs">VNeID</span>
-                    Đăng nhập bằng VNeID
-                </button>
-            </div>
-
             <div class="mt-4 text-center text-sm text-slate-500">Chưa có tài khoản? <button onclick="switchToRegisterModal()" class="text-indigo-600 font-semibold hover:underline">Đăng ký</button></div>
         </div>
     </div>
@@ -277,15 +268,6 @@
                 <div id="reg-error" class="text-red-500 text-sm hidden"></div>
                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Đăng Ký</button>
             </form>
-
-            <!-- Nút Đăng ký / Liên kết VNeID -->
-            <div class="mt-4 pt-4 border-t border-slate-150">
-                <button onclick="handleVNeIDLogin()" class="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl font-semibold transition text-sm">
-                    <span class="bg-white text-red-600 font-black px-1.5 py-0.5 rounded text-xs">VNeID</span>
-                    Xác thực & Đăng ký bằng VNeID
-                </button>
-            </div>
-
             <div class="mt-4 text-center text-sm text-slate-500">Đã có tài khoản? <button onclick="switchToLoginModal()" class="text-indigo-600 font-semibold hover:underline">Đăng nhập</button></div>
         </div>
     </div>
@@ -538,8 +520,7 @@
                     password: 'THoaTV1!',
                     role: 'admin',
                     status: 'approved',
-                    canRename: true,
-                    vneidStatus: 'verified'
+                    canRename: true
                 }];
                 data.articles = data.articles || [];
                 data.warnings = data.warnings || [];
@@ -564,32 +545,6 @@
                 body: JSON.stringify(data)
             });
             return await res.json();
-        }
-
-        // --- XỬ LÝ ĐĂNG NHẬP / XÁC THỰC VNeID ---
-        async function handleVNeIDLogin() {
-            alert('Hệ thống đang chuyển hướng kết nối Cổng định danh điện tử VNeID chính thức theo quy định... (Mô phỏng tích hợp xác thực thành công)');
-            const raw = localStorage.getItem('current_user');
-            if (raw) {
-                let user = JSON.parse(raw);
-                try {
-                    const data = await fetchBinData();
-                    data.users = data.users.map(u => u.username === user.username ? { ...u, vneidStatus: 'verified' } : u);
-                    await updateBinData(data);
-                    user.vneidStatus = 'verified';
-                    localStorage.setItem('current_user', JSON.stringify(user));
-                    alert('Liên kết và xác thực tài khoản bằng VNeID thành công!');
-                    closeModal('login-modal');
-                    closeModal('register-modal');
-                    checkAuthState();
-                } catch (e) {
-                    alert('Lỗi cập nhật trạng thái VNeID.');
-                }
-            } else {
-                alert('Vui lòng đăng nhập tài khoản THoaTV trước khi thực hiện liên kết VNeID.');
-                closeModal('register-modal');
-                openModal('login-modal');
-            }
         }
 
         // --- QUẢN LÝ KHUNG GIỜ HOẠT ĐỘNG (OPERATING HOURS) ---
@@ -1270,8 +1225,7 @@
                     password,
                     role: 'member',
                     status: 'pending',
-                    canRename: true,
-                    vneidStatus: 'unlinked'
+                    canRename: true
                 });
 
                 await addNotification('all_admin', `Có thành viên mới đăng ký tài khoản: @${username}`);
@@ -1328,23 +1282,14 @@
             if (raw) {
                 const user = JSON.parse(raw);
                 const roleName = user.role === 'admin' ? 'Quản trị viên' : 'Thành viên';
-                const vneidBadge = user.vneidStatus === 'verified' 
-                    ? '<span class="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded ml-1">🛡️ Đã xác thực VNeID</span>' 
-                    : '<button onclick="handleVNeIDLogin()" class="text-[10px] bg-red-100 text-red-700 hover:bg-red-200 font-bold px-1.5 py-0.5 rounded ml-1">🔗 Liên kết VNeID</button>';
                 
                 authNav.innerHTML = `
-                    <div class="flex items-center space-x-1">
-                        <span class="text-sm font-semibold">@${user.username} (${roleName})</span>
-                        ${vneidBadge}
-                    </div>
+                    <span class="text-sm font-semibold">@${user.username} (${roleName})</span>
                     <button onclick="handleLogout()" class="bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded-lg text-sm">Đăng Xuất</button>
                 `;
 
                 authMobileBar.innerHTML = `
-                    <div class="flex items-center space-x-1">
-                        <span class="text-xs font-semibold text-slate-700">@${user.username}</span>
-                        ${vneidBadge}
-                    </div>
+                    <span class="text-xs font-semibold text-slate-700">@${user.username} (${roleName})</span>
                     <span class="text-slate-300">|</span>
                     <button onclick="handleLogout()" class="text-xs font-bold text-indigo-600">Đăng Xuất</button>
                 `;
@@ -1620,42 +1565,35 @@
                 const data = await fetchBinData();
                 const users = data.users || [];
                 container.innerHTML = `
-                    <table class="w-full text-left border-collapse min-w-[600px]">
+                    <table class="w-full text-left border-collapse min-w-[500px]">
                         <thead>
                             <tr class="border-b text-sm text-slate-500">
                                 <th class="py-2">Tài khoản</th>
                                 <th class="py-2">Email</th>
                                 <th class="py-2">Trạng thái</th>
-                                <th class="py-2">VNeID</th>
                                 <th class="py-2">Vai trò</th>
                                 <th class="py-2">Hành động</th>
                             </tr>
                         </thead>
                         <tbody>
-                            ${users.map(u => {
-                                const vneidStatusText = u.vneidStatus === 'verified' 
-                                    ? '<span class="px-2 py-1 text-xs rounded bg-emerald-100 text-emerald-700">Đã xác thực</span>' 
-                                    : (u.vneidStatus === 'pending' ? '<span class="px-2 py-1 text-xs rounded bg-amber-100 text-amber-700">Đang chờ</span>' : '<span class="px-2 py-1 text-xs rounded bg-slate-100 text-slate-600">Chưa liên kết</span>');
-                                return `
-                                    <tr class="border-b">
-                                        <td class="py-3 font-semibold">@${u.username}</td>
-                                        <td class="py-3 text-slate-600 text-sm">${u.email || 'Chưa có'}</td>
-                                        <td class="py-3"><span class="px-2 py-1 text-xs rounded ${u.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">${u.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}</span></td>
-                                        <td class="py-3">${vneidStatusText}</td>
-                                        <td class="py-3 uppercase text-xs font-bold">${u.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}</td>
-                                        <td class="py-3 space-x-1 space-y-1">
-                                            ${u.status === 'pending' ? `<button onclick="approveUser('${u.username}')" class="bg-green-600 text-white px-2.5 py-1 rounded text-xs">Duyệt</button>` : ''}
-                                            <button onclick="toggleRenameLock('${u.username}')" class="px-2.5 py-1 rounded text-xs text-white ${u.canRename !== false ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'}">
-                                                ${u.canRename !== false ? 'Được đổi tên' : 'Đã khóa'}
-                                            </button>
-                                            <button onclick="openAdminChangePass('${u.username}')" class="bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 rounded text-xs">Đổi MK</button>
-                                            <button onclick="openAdminEditEmail('${u.username}', '${u.email || ''}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded text-xs">Sửa Email</button>
-                                            ${u.role !== 'admin' ? `<button onclick="makeAdmin('${u.username}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded text-xs">Chuyển Admin</button>` : ''}
-                                            <button onclick="deleteUser('${u.username}')" class="bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded text-xs">Xóa</button>
-                                        </td>
-                                    </tr>
-                                `;
-                            }).join('')}
+                            ${users.map(u => `
+                                <tr class="border-b">
+                                    <td class="py-3 font-semibold">@${u.username}</td>
+                                    <td class="py-3 text-slate-600 text-sm">${u.email || 'Chưa có'}</td>
+                                    <td class="py-3"><span class="px-2 py-1 text-xs rounded ${u.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">${u.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}</span></td>
+                                    <td class="py-3 uppercase text-xs font-bold">${u.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}</td>
+                                    <td class="py-3 space-x-1 space-y-1">
+                                        ${u.status === 'pending' ? `<button onclick="approveUser('${u.username}')" class="bg-green-600 text-white px-2.5 py-1 rounded text-xs">Duyệt</button>` : ''}
+                                        <button onclick="toggleRenameLock('${u.username}')" class="px-2.5 py-1 rounded text-xs text-white ${u.canRename !== false ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'}">
+                                            ${u.canRename !== false ? 'Được đổi tên' : 'Đã khóa'}
+                                        </button>
+                                        <button onclick="openAdminChangePass('${u.username}')" class="bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 rounded text-xs">Đổi MK</button>
+                                        <button onclick="openAdminEditEmail('${u.username}', '${u.email || ''}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded text-xs">Sửa Email</button>
+                                        ${u.role !== 'admin' ? `<button onclick="makeAdmin('${u.username}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded text-xs">Chuyển Admin</button>` : ''}
+                                        <button onclick="deleteUser('${u.username}')" class="bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded text-xs">Xóa</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
                         </tbody>
                     </table>
                 `;
