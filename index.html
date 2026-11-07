@@ -103,11 +103,16 @@
         <div id="view-admin" class="hidden space-y-8">
             <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
                 <h2 class="text-2xl font-bold text-slate-800 mb-2">Bảng Quản Trị Hệ Thống (Quản trị viên)</h2>
-                <p class="text-slate-500 text-sm mb-6">Quản lý duyệt tài khoản, khóa/mở quyền đổi tên, đổi mật khẩu, sửa email thành viên, xóa tài khoản và chuyển quyền Quản trị viên.</p>
+                <p class="text-slate-500 text-sm mb-6">Quản lý duyệt tài khoản, khóa/mở quyền đổi tên, đổi mật khẩu, sửa email thành viên, xóa tài khoản, xem bài viết đã lên lịch và chuyển quyền Quản trị viên.</p>
                 
                 <h3 class="text-lg font-bold text-slate-700 mb-4">Danh Sách Tài Khoản Hệ Thống</h3>
-                <div id="accounts-list-container" class="overflow-x-auto">
+                <div id="accounts-list-container" class="overflow-x-auto mb-8">
                     <p class="text-slate-500">Đang tải danh sách tài khoản...</p>
+                </div>
+
+                <h3 class="text-lg font-bold text-slate-700 mb-4">Quản Lý Bài Viết & Lịch Đăng Bài Toàn Hệ Thống</h3>
+                <div id="admin-articles-list-container" class="overflow-x-auto">
+                    <p class="text-slate-500">Đang tải danh sách bài viết...</p>
                 </div>
             </div>
         </div>
@@ -272,23 +277,40 @@
 
     <!-- MODAL: Create/Edit Article -->
     <div id="article-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl relative">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button onclick="closeModal('article-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
             <h3 id="article-modal-title" class="text-2xl font-black mb-4 text-center">Đăng Bài Viết</h3>
             <form onsubmit="handleSaveArticle(event)" class="space-y-4">
                 <input type="hidden" id="art-edit-index" value="">
                 <div>
-                    <label class="block text-sm font-medium mb-1">Tiêu đề bài viết</label>
+                    <label class="block text-sm font-medium mb-1">Tiêu đề bài viết <span class="text-rose-500">*</span></label>
                     <input type="text" id="art-title" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1">Mô tả ngắn</label>
-                    <textarea id="art-desc" rows="2" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                    <label class="block text-sm font-medium mb-1">Nội dung chi tiết / Mô tả ngắn <span class="text-rose-500">*</span></label>
+                    <textarea id="art-desc" rows="3" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1">URL Hình ảnh (HTTPS)</label>
+                    <label class="block text-sm font-medium mb-1">URL Hình ảnh (Tùy chọn)</label>
                     <input type="url" id="art-img" placeholder="https://..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                 </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Nguồn tham khảo (Khuyến khích)</label>
+                    <input type="text" id="art-source" placeholder="vd: Báo Tuổi Trẻ, chính quy..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                
+                <!-- TÍNH NĂNG LÊN LỊCH ĐĂNG BÀI -->
+                <div class="space-y-2 pt-2 border-t border-slate-100">
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" id="art-schedule-check" onchange="toggleScheduleInput()" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                        <span class="text-sm font-semibold text-slate-700">Lên lịch đăng bài (Scheduled Publishing)</span>
+                    </label>
+                    <div id="art-schedule-container" class="hidden space-y-1">
+                        <label class="block text-xs text-slate-500">Chọn ngày và giờ đăng cụ thể:</label>
+                        <input type="datetime-local" id="art-schedule-time" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+                </div>
+
                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Lưu Bài Viết</button>
             </form>
         </div>
@@ -355,8 +377,8 @@
             document.getElementById('view-home').classList.add('hidden');
             document.getElementById('view-admin').classList.add('hidden');
             document.getElementById('view-' + viewName).classList.remove('hidden');
-            if (viewName === 'home') { loadWarnings(); loadRecommendations(); loadArticles(); }
-            if (viewName === 'admin') loadAccountsList();
+            if (viewName === 'home') { loadWarnings(); loadRecommendations(); checkAndPublishScheduledArticles(); }
+            if (viewName === 'admin') { loadAccountsList(); loadAdminArticlesList(); }
         }
 
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
@@ -910,7 +932,7 @@
                 checkAuthState();
                 loadWarnings();
                 loadRecommendations();
-                loadArticles();
+                checkAndPublishScheduledArticles();
             } catch (err) {
                 errDiv.textContent = err.message;
                 errDiv.classList.remove('hidden');
@@ -976,6 +998,33 @@
             alert('Đã đăng xuất.');
         }
 
+        // --- KIỂM TRA VÀ TỰ ĐỘNG ĐĂNG BÀI ĐÃ LÊN LỊCH ---
+        async function checkAndPublishScheduledArticles() {
+            try {
+                const data = await fetchBinData();
+                if (!data.articles) return;
+
+                const now = Date.now();
+                let hasChanges = false;
+
+                data.articles = data.articles.map(art => {
+                    if (art.status === 'scheduled' && art.scheduledTime && now >= art.scheduledTime) {
+                        hasChanges = true;
+                        return { ...art, status: 'published' };
+                    }
+                    return art;
+                });
+
+                if (hasChanges) {
+                    await updateBinData(data);
+                }
+
+                loadArticles();
+            } catch (e) {
+                loadArticles();
+            }
+        }
+
         async function loadArticles() {
             const container = document.getElementById('articles-container');
             container.innerHTML = `<p class="text-slate-500 col-span-full text-center py-10">Đang tải...</p>`;
@@ -985,12 +1034,17 @@
                 const rawUser = localStorage.getItem('current_user');
                 const currentUser = rawUser ? JSON.parse(rawUser) : null;
 
-                if (articles.length === 0) {
-                    container.innerHTML = `<p class="text-slate-500 col-span-full text-center py-10">Chưa có bài viết nào.</p>`;
+                // Chỉ hiển thị các bài viết đã ở trạng thái 'published' hoặc không có status (bài cũ)
+                const publishedArticles = articles.filter(art => !art.status || art.status === 'published');
+
+                if (publishedArticles.length === 0) {
+                    container.innerHTML = `<p class="text-slate-500 col-span-full text-center py-10">Chưa có bài viết công khai nào.</p>`;
                     return;
                 }
 
-                container.innerHTML = articles.map((art, index) => {
+                container.innerHTML = publishedArticles.map((art) => {
+                    // Tìm index thực tế trong mảng gốc của dữ liệu để sửa/xóa đúng bài
+                    const realIndex = articles.findIndex(a => a === art);
                     const canModify = currentUser && (currentUser.role === 'admin' || currentUser.username === art.author);
                     return `
                         <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm flex flex-col justify-between">
@@ -999,13 +1053,14 @@
                                 <div class="p-6">
                                     <h3 class="text-xl font-bold mb-2">${art.title}</h3>
                                     <p class="text-slate-600 text-sm mb-4">${art.desc || ''}</p>
+                                    ${art.source ? `<p class="text-xs text-indigo-600 font-medium mb-2">Nguồn: ${art.source}</p>` : ''}
                                     <span class="text-xs text-slate-400">Đăng bởi: @${art.author} - ${art.date}</span>
                                 </div>
                             </div>
                             ${canModify ? `
                                 <div class="px-6 pb-4 flex space-x-2">
-                                    <button onclick="openEditArticle(${index})" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 rounded text-xs font-semibold">Sửa</button>
-                                    <button onclick="deleteArticle(${index})" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-semibold">Xóa</button>
+                                    <button onclick="openEditArticle(${realIndex})" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 rounded text-xs font-semibold">Sửa</button>
+                                    <button onclick="deleteArticle(${realIndex})" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-semibold">Xóa</button>
                                 </div>
                             ` : ''}
                         </div>
@@ -1016,12 +1071,26 @@
             }
         }
 
+        function toggleScheduleInput() {
+            const isChecked = document.getElementById('art-schedule-check').checked;
+            const container = document.getElementById('art-schedule-container');
+            if (isChecked) {
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
         function openArticleModal() {
             document.getElementById('article-modal-title').textContent = 'Đăng Bài Viết Mới';
             document.getElementById('art-edit-index').value = '';
             document.getElementById('art-title').value = '';
             document.getElementById('art-desc').value = '';
             document.getElementById('art-img').value = '';
+            document.getElementById('art-source').value = '';
+            document.getElementById('art-schedule-check').checked = false;
+            document.getElementById('art-schedule-container').classList.add('hidden');
+            document.getElementById('art-schedule-time').value = '';
             openModal('article-modal');
         }
 
@@ -1034,6 +1103,21 @@
                 document.getElementById('art-title').value = art.title;
                 document.getElementById('art-desc').value = art.desc;
                 document.getElementById('art-img').value = art.img || '';
+                document.getElementById('art-source').value = art.source || '';
+                
+                if (art.status === 'scheduled' && art.scheduledTime) {
+                    document.getElementById('art-schedule-check').checked = true;
+                    document.getElementById('art-schedule-container').classList.remove('hidden');
+                    const d = new Date(art.scheduledTime);
+                    const pad = (n) => n < 10 ? '0' + n : n;
+                    const formatted = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                    document.getElementById('art-schedule-time').value = formatted;
+                } else {
+                    document.getElementById('art-schedule-check').checked = false;
+                    document.getElementById('art-schedule-container').classList.add('hidden');
+                    document.getElementById('art-schedule-time').value = '';
+                }
+
                 openModal('article-modal');
             } catch (err) {
                 alert('Lỗi tải bài viết.');
@@ -1050,21 +1134,50 @@
             const title = document.getElementById('art-title').value;
             const desc = document.getElementById('art-desc').value;
             const img = document.getElementById('art-img').value;
+            const source = document.getElementById('art-source').value;
+            
+            const isScheduled = document.getElementById('art-schedule-check').checked;
+            const scheduleTimeStr = document.getElementById('art-schedule-time').value;
+
+            if (isScheduled && !scheduleTimeStr) {
+                alert('Vui lòng chọn thời gian lên lịch đăng bài.');
+                return;
+            }
 
             try {
                 const data = await fetchBinData();
                 data.articles = data.articles || [];
 
+                const status = isScheduled ? 'scheduled' : 'published';
+                const scheduledTime = isScheduled ? new Date(scheduleTimeStr).getTime() : null;
+
                 if (editIndex === '') {
-                    data.articles.unshift({ title, desc, img, author: user.username, date: new Date().toLocaleDateString('vi-VN') });
-                    alert('Đăng bài thành công!');
+                    data.articles.unshift({ 
+                        title, 
+                        desc, 
+                        img, 
+                        source, 
+                        author: user.username, 
+                        date: new Date().toLocaleDateString('vi-VN'),
+                        status,
+                        scheduledTime
+                    });
+                    alert(isScheduled ? 'Đã lên lịch đăng bài thành công!' : 'Đăng bài thành công ngay lập tức!');
                 } else {
                     const idx = parseInt(editIndex);
                     if (user.role !== 'admin' && data.articles[idx].author !== user.username) {
                         alert('Bạn chỉ có quyền sửa bài viết của chính mình!');
                         return;
                     }
-                    data.articles[idx] = { ...data.articles[idx], title, desc, img };
+                    data.articles[idx] = { 
+                        ...data.articles[idx], 
+                        title, 
+                        desc, 
+                        img, 
+                        source,
+                        status,
+                        scheduledTime
+                    };
                     alert('Cập nhật bài viết thành công!');
                 }
 
@@ -1142,6 +1255,59 @@
             }
         }
 
+        // --- QUẢN LÝ BÀI VIẾT & LỊCH ĐĂNG BÀI TRONG TRANG QUẢN TRỊ ---
+        async function loadAdminArticlesList() {
+            const container = document.getElementById('admin-articles-list-container');
+            container.innerHTML = `<p class="text-slate-500">Đang tải danh sách bài viết...</p>`;
+            try {
+                const data = await fetchBinData();
+                const articles = data.articles || [];
+
+                if (articles.length === 0) {
+                    container.innerHTML = `<p class="text-slate-500 text-sm">Chưa có bài viết nào trong hệ thống.</p>`;
+                    return;
+                }
+
+                container.innerHTML = `
+                    <table class="w-full text-left border-collapse min-w-[600px]">
+                        <thead>
+                            <tr class="border-b text-sm text-slate-500">
+                                <th class="py-2">Tiêu đề</th>
+                                <th class="py-2">Tác giả</th>
+                                <th class="py-2">Trạng thái</th>
+                                <th class="py-2">Thời gian đăng / Lên lịch</th>
+                                <th class="py-2">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${articles.map((art, index) => {
+                                const isSched = art.status === 'scheduled';
+                                const schedTimeText = isSched && art.scheduledTime ? new Date(art.scheduledTime).toLocaleString('vi-VN') : 'Đã xuất bản';
+                                return `
+                                    <tr class="border-b">
+                                        <td class="py-3 font-semibold max-w-xs truncate">${art.title}</td>
+                                        <td class="py-3 text-sm text-slate-600">@${art.author}</td>
+                                        <td class="py-3">
+                                            <span class="px-2 py-1 text-xs rounded ${isSched ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}">
+                                                ${isSched ? 'Đã lên lịch' : 'Đã công khai'}
+                                            </span>
+                                        </td>
+                                        <td class="py-3 text-xs text-slate-500">${schedTimeText}</td>
+                                        <td class="py-3 space-x-1">
+                                            <button onclick="openEditArticle(${index})" class="bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 rounded text-xs">Sửa</button>
+                                            <button onclick="deleteArticle(${index}); loadAdminArticlesList();" class="bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded text-xs">Xóa</button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (err) {
+                container.innerHTML = `<p class="text-red-500">Lỗi tải danh sách bài viết quản trị.</p>`;
+            }
+        }
+
         async function approveUser(username) {
             const data = await fetchBinData();
             data.users = data.users.map(u => u.username === username ? {...u, status: 'approved'} : u);
@@ -1213,7 +1379,7 @@
                 const data = await fetchBinData();
                 data.users = data.users.map(u => u.username === username ? { ...u, password: newPassword } : u);
                 await updateBinData(data);
-                alert(`Đã đổi mật khẩu thành công cho tài khoản @${username}!`);
+                alert(`Đổi mật khẩu thành công cho tài khoản @${username}!`);
                 closeModal('admin-change-pass-modal');
             } catch (err) {
                 alert('Lỗi: ' + err.message);
@@ -1229,7 +1395,7 @@
         }
 
         async function makeAdmin(newAdminUsername) {
-            if (!confirm(`Chuyển quyền Quản trị viên cho @${newAdminUsername}? Bạn sẽ trở thành tài khoản thường.`)) return;
+            if (!confirm(`Chuyển quyền Quản trị viên cho @{newAdminUsername}? Bạn sẽ trở thành tài khoản thường.`)) return;
             const data = await fetchBinData();
             data.users = data.users.map(u => u.username === newAdminUsername ? {...u, role: 'admin', status: 'approved'} : {...u, role: 'member'});
             await updateBinData(data);
@@ -1242,7 +1408,9 @@
             checkAuthState();
             loadWarnings();
             loadRecommendations();
-            loadArticles();
+            checkAndPublishScheduledArticles();
+            // Kiểm tra ngầm lịch đăng bài mỗi phút
+            setInterval(checkAndPublishScheduledArticles, 60000);
         };
     </script>
 </body>
