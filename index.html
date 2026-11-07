@@ -37,7 +37,7 @@
             </nav>
 
             <div class="flex items-center space-x-4">
-                <!-- Biểu tượng Chuông Thông Báo (Hiển thị cho cả Guest) -->
+                <!-- Biểu tượng Chuông Thông Báo -->
                 <div id="notification-bell-container" class="relative">
                     <button onclick="toggleNotificationDropdown()" class="relative p-2 text-slate-600 hover:text-indigo-600 transition focus:outline-none">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -75,13 +75,30 @@
     </header>
 
     <!-- Main Content Container -->
-    <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full">
+    <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full space-y-10">
         
         <!-- VIEW: Home / Articles Feed -->
         <div id="view-home" class="space-y-10">
             <section class="text-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-3xl p-8 md:p-12 shadow-xl">
                 <h1 class="text-3xl md:text-5xl font-black mb-4">Chào mừng đến với THoaTV</h1>
                 <p class="text-base md:text-lg opacity-90 max-w-2xl mx-auto">Nơi cập nhật thông tin, tin tức và lịch phát sóng nhanh chóng.</p>
+            </section>
+
+            <!-- WIDGET: Khung Giờ Hoạt Động (Operating Hours) -->
+            <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div class="space-y-2 flex-grow">
+                    <div class="flex items-center gap-3">
+                        <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <span>🕒</span> Khung Giờ Hoạt Động & Làm Việc
+                        </h2>
+                        <span id="op-status-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">Đang cập nhật...</span>
+                    </div>
+                    <p id="op-hours-desc" class="text-sm text-slate-600">Giờ làm việc: Đang tải thông tin...</p>
+                    <p id="op-note-desc" class="text-xs text-slate-400 italic"></p>
+                </div>
+                <div id="admin-edit-hours-container" class="hidden flex-shrink-0">
+                    <button onclick="openOperatingHoursModal()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-semibold transition">⚙️ Cập Nhật Giờ Hoạt Động</button>
+                </div>
             </section>
 
             <!-- Khuyến cáo từ Quản trị viên -->
@@ -129,12 +146,15 @@
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-800 mb-1">Bảng Quản Trị Hệ Thống (Quản trị viên)</h2>
-                        <p class="text-slate-500 text-sm">Quản lý duyệt tài khoản, khóa/mở quyền đổi tên, đổi mật khẩu, sửa email thành viên, xóa tài khoản, xem bài viết đã lên lịch và đăng thông báo chung.</p>
+                        <p class="text-slate-500 text-sm">Quản lý duyệt tài khoản, trạng thái VNeID, khóa/mở quyền đổi tên, đổi mật khẩu và thông báo chung.</p>
                     </div>
-                    <button onclick="openModal('admin-broadcast-modal')" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition flex-shrink-0">+ Đăng Thông Báo Chung</button>
+                    <div class="flex gap-2 flex-shrink-0">
+                        <button onclick="openOperatingHoursModal()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">⚙️ Sửa Giờ Hoạt Động</button>
+                        <button onclick="openModal('admin-broadcast-modal')" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">+ Thông Báo Chung</button>
+                    </div>
                 </div>
                 
-                <h3 class="text-lg font-bold text-slate-700 mb-4">Danh Sách Tài Khoản Hệ Thống</h3>
+                <h3 class="text-lg font-bold text-slate-700 mb-4">Danh Sách Tài Khoản & Trạng Thái VNeID</h3>
                 <div id="accounts-list-container" class="overflow-x-auto mb-8">
                     <p class="text-slate-500">Đang tải danh sách tài khoản...</p>
                 </div>
@@ -147,6 +167,42 @@
         </div>
 
     </main>
+
+    <!-- MODAL: Edit Operating Hours -->
+    <div id="operating-hours-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl relative">
+            <button onclick="closeModal('operating-hours-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
+            <h3 class="text-2xl font-black mb-4 text-center text-indigo-600">Cập Nhật Khung Giờ Hoạt Động</h3>
+            <form onsubmit="handleSaveOperatingHours(event)" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Giờ bắt đầu</label>
+                        <input type="time" id="op-start-time" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Giờ kết thúc</label>
+                        <input type="time" id="op-end-time" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Các ngày làm việc trong tuần</label>
+                    <input type="text" id="op-days" required placeholder="vd: Thứ Hai đến Thứ Sáu" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Trạng thái vận hành</label>
+                    <select id="op-status-select" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <option value="active">Đang hoạt động bình thường</option>
+                        <option value="paused">Tạm ngừng hoạt động</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Ghi chú / Lịch nghỉ (Tùy chọn)</label>
+                    <input type="text" id="op-note" placeholder="vd: Nghỉ lễ Quốc khánh, bảo trì hệ thống..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Lưu Thay Đổi</button>
+            </form>
+        </div>
+    </div>
 
     <!-- MODAL: Admin Broadcast Announcement -->
     <div id="admin-broadcast-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
@@ -186,6 +242,15 @@
                 <div id="login-error" class="text-red-500 text-sm hidden"></div>
                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Đăng Nhập</button>
             </form>
+
+            <!-- Nút Đăng nhập VNeID -->
+            <div class="mt-4 pt-4 border-t border-slate-150">
+                <button onclick="handleVNeIDLogin()" class="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl font-semibold transition text-sm">
+                    <span class="bg-white text-red-600 font-black px-1.5 py-0.5 rounded text-xs">VNeID</span>
+                    Đăng nhập bằng VNeID
+                </button>
+            </div>
+
             <div class="mt-4 text-center text-sm text-slate-500">Chưa có tài khoản? <button onclick="switchToRegisterModal()" class="text-indigo-600 font-semibold hover:underline">Đăng ký</button></div>
         </div>
     </div>
@@ -212,6 +277,15 @@
                 <div id="reg-error" class="text-red-500 text-sm hidden"></div>
                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Đăng Ký</button>
             </form>
+
+            <!-- Nút Đăng ký / Liên kết VNeID -->
+            <div class="mt-4 pt-4 border-t border-slate-150">
+                <button onclick="handleVNeIDLogin()" class="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl font-semibold transition text-sm">
+                    <span class="bg-white text-red-600 font-black px-1.5 py-0.5 rounded text-xs">VNeID</span>
+                    Xác thực & Đăng ký bằng VNeID
+                </button>
+            </div>
+
             <div class="mt-4 text-center text-sm text-slate-500">Đã có tài khoản? <button onclick="switchToLoginModal()" class="text-indigo-600 font-semibold hover:underline">Đăng nhập</button></div>
         </div>
     </div>
@@ -419,8 +493,8 @@
             document.getElementById('view-home').classList.add('hidden');
             document.getElementById('view-admin').classList.add('hidden');
             document.getElementById('view-' + viewName).classList.remove('hidden');
-            if (viewName === 'home') { loadWarnings(); loadRecommendations(); checkAndPublishScheduledArticles(); }
-            if (viewName === 'admin') { loadAccountsList(); loadAdminArticlesList(); }
+            if (viewName === 'home') { loadOperatingHours(); loadWarnings(); loadRecommendations(); checkAndPublishScheduledArticles(); }
+            if (viewName === 'admin') { loadOperatingHours(); loadAccountsList(); loadAdminArticlesList(); }
         }
 
         function openModal(id) { 
@@ -464,12 +538,20 @@
                     password: 'THoaTV1!',
                     role: 'admin',
                     status: 'approved',
-                    canRename: true
+                    canRename: true,
+                    vneidStatus: 'verified'
                 }];
                 data.articles = data.articles || [];
                 data.warnings = data.warnings || [];
                 data.recommendations = data.recommendations || [];
                 data.notifications = data.notifications || [];
+                data.operatingHours = {
+                    startTime: '08:00',
+                    endTime: '17:00',
+                    days: 'Thứ Hai đến Thứ Sáu',
+                    status: 'active',
+                    note: 'Giờ làm việc hành chính chính thức tại số 02 Lê Hồng Phong, TP. Huế.'
+                };
                 await updateBinData(data);
             }
             return data;
@@ -482,6 +564,117 @@
                 body: JSON.stringify(data)
             });
             return await res.json();
+        }
+
+        // --- XỬ LÝ ĐĂNG NHẬP / XÁC THỰC VNeID ---
+        async function handleVNeIDLogin() {
+            alert('Hệ thống đang chuyển hướng kết nối Cổng định danh điện tử VNeID chính thức theo quy định... (Mô phỏng tích hợp xác thực thành công)');
+            const raw = localStorage.getItem('current_user');
+            if (raw) {
+                let user = JSON.parse(raw);
+                try {
+                    const data = await fetchBinData();
+                    data.users = data.users.map(u => u.username === user.username ? { ...u, vneidStatus: 'verified' } : u);
+                    await updateBinData(data);
+                    user.vneidStatus = 'verified';
+                    localStorage.setItem('current_user', JSON.stringify(user));
+                    alert('Liên kết và xác thực tài khoản bằng VNeID thành công!');
+                    closeModal('login-modal');
+                    closeModal('register-modal');
+                    checkAuthState();
+                } catch (e) {
+                    alert('Lỗi cập nhật trạng thái VNeID.');
+                }
+            } else {
+                alert('Vui lòng đăng nhập tài khoản THoaTV trước khi thực hiện liên kết VNeID.');
+                closeModal('register-modal');
+                openModal('login-modal');
+            }
+        }
+
+        // --- QUẢN LÝ KHUNG GIỜ HOẠT ĐỘNG (OPERATING HOURS) ---
+        async function loadOperatingHours() {
+            const descEl = document.getElementById('op-hours-desc');
+            const noteEl = document.getElementById('op-note-desc');
+            const badgeEl = document.getElementById('op-status-badge');
+            
+            try {
+                const data = await fetchBinData();
+                const oh = data.operatingHours || {
+                    startTime: '08:00',
+                    endTime: '17:00',
+                    days: 'Thứ Hai đến Thứ Sáu',
+                    status: 'active',
+                    note: ''
+                };
+
+                descEl.textContent = `Thời gian làm việc: ${oh.startTime} - ${oh.endTime} (${oh.days})`;
+                noteEl.textContent = oh.note ? `Ghi chú: ${oh.note}` : '';
+
+                const now = new Date();
+                const currentMinutes = now.getHours() * 60 + now.getMinutes();
+                const [startH, startM] = oh.startTime.split(':').map(Number);
+                const [endH, endM] = oh.endTime.split(':').map(Number);
+                const startMinutes = startH * 60 + startM;
+                const endMinutes = endH * 60 + endM;
+
+                if (oh.status === 'paused') {
+                    badgeEl.className = 'px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700';
+                    badgeEl.textContent = '🔴 Tạm ngừng hoạt động';
+                } else if (currentMinutes >= startMinutes && currentMinutes <= endMinutes) {
+                    badgeEl.className = 'px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700';
+                    badgeEl.textContent = '🟢 Đang hoạt động';
+                } else {
+                    badgeEl.className = 'px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700';
+                    badgeEl.textContent = '🌙 Ngoài giờ hoạt động';
+                }
+            } catch (e) {
+                descEl.textContent = 'Không thể tải thông tin giờ hoạt động.';
+            }
+        }
+
+        function openOperatingHoursModal() {
+            fetchBinData().then(data => {
+                const oh = data.operatingHours || { startTime: '08:00', endTime: '17:00', days: 'Thứ Hai đến Thứ Sáu', status: 'active', note: '' };
+                document.getElementById('op-start-time').value = oh.startTime;
+                document.getElementById('op-end-time').value = oh.endTime;
+                document.getElementById('op-days').value = oh.days;
+                document.getElementById('op-status-select').value = oh.status;
+                document.getElementById('op-note').value = oh.note || '';
+                openModal('operating-hours-modal');
+            }).catch(() => {
+                openModal('operating-hours-modal');
+            });
+        }
+
+        async function handleSaveOperatingHours(e) {
+            e.preventDefault();
+            const raw = localStorage.getItem('current_user');
+            if (!raw) return;
+            const user = JSON.parse(raw);
+            if (user.role !== 'admin') {
+                alert('Chỉ Quản trị viên mới có quyền cập nhật khung giờ hoạt động!');
+                return;
+            }
+
+            const startTime = document.getElementById('op-start-time').value;
+            const endTime = document.getElementById('op-end-time').value;
+            const days = document.getElementById('op-days').value.trim();
+            const status = document.getElementById('op-status-select').value;
+            const note = document.getElementById('op-note').value.trim();
+
+            try {
+                const data = await fetchBinData();
+                data.operatingHours = { startTime, endTime, days, status, note };
+                await updateBinData(data);
+
+                alert('Cập nhật khung giờ hoạt động thành công!');
+                closeModal('operating-hours-modal');
+                loadOperatingHours();
+                await addNotification('all_user', `🕒 [Thông báo]: Khung giờ hoạt động của THoaTV đã được cập nhật (${startTime} - ${endTime}, ${days}).`, 'info');
+            } catch (err) {
+                alert('Lỗi: ' + err.message);
+            }
         }
 
         // --- HỆ THỐNG THÔNG BÁO (NOTIFICATION SYSTEM) ---
@@ -543,7 +736,6 @@
                 const data = await fetchBinData();
                 const notifications = data.notifications || [];
 
-                // Lọc thông báo dành cho Guest (all_user) hoặc cho user cụ thể nếu đã đăng nhập
                 const userNotifs = notifications.filter(n => {
                     if (n.targetUser === 'all_user') return true;
                     if (!currentUser) return false;
@@ -1078,7 +1270,8 @@
                     password,
                     role: 'member',
                     status: 'pending',
-                    canRename: true
+                    canRename: true,
+                    vneidStatus: 'unlinked'
                 });
 
                 await addNotification('all_admin', `Có thành viên mới đăng ký tài khoản: @${username}`);
@@ -1112,6 +1305,7 @@
                 alert('Đăng nhập thành công!');
                 closeModal('login-modal');
                 checkAuthState();
+                loadOperatingHours();
                 loadWarnings();
                 loadRecommendations();
                 checkAndPublishScheduledArticles();
@@ -1129,18 +1323,28 @@
             const createArticleBtn = document.getElementById('create-article-btn-container');
             const adminOnlyFeatures = document.getElementById('admin-only-features');
             const addRecommendationBtn = document.getElementById('add-recommendation-btn');
+            const editHoursContainer = document.getElementById('admin-edit-hours-container');
 
             if (raw) {
                 const user = JSON.parse(raw);
                 const roleName = user.role === 'admin' ? 'Quản trị viên' : 'Thành viên';
+                const vneidBadge = user.vneidStatus === 'verified' 
+                    ? '<span class="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded ml-1">🛡️ Đã xác thực VNeID</span>' 
+                    : '<button onclick="handleVNeIDLogin()" class="text-[10px] bg-red-100 text-red-700 hover:bg-red-200 font-bold px-1.5 py-0.5 rounded ml-1">🔗 Liên kết VNeID</button>';
                 
                 authNav.innerHTML = `
-                    <span class="text-sm font-semibold">@${user.username} (${roleName})</span>
+                    <div class="flex items-center space-x-1">
+                        <span class="text-sm font-semibold">@${user.username} (${roleName})</span>
+                        ${vneidBadge}
+                    </div>
                     <button onclick="handleLogout()" class="bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded-lg text-sm">Đăng Xuất</button>
                 `;
 
                 authMobileBar.innerHTML = `
-                    <span class="text-xs font-semibold text-slate-700">@${user.username} (${roleName})</span>
+                    <div class="flex items-center space-x-1">
+                        <span class="text-xs font-semibold text-slate-700">@${user.username}</span>
+                        ${vneidBadge}
+                    </div>
                     <span class="text-slate-300">|</span>
                     <button onclick="handleLogout()" class="text-xs font-bold text-indigo-600">Đăng Xuất</button>
                 `;
@@ -1148,9 +1352,11 @@
                 if (user.role === 'admin') {
                     adminLink.classList.remove('hidden');
                     adminOnlyFeatures.classList.remove('hidden');
+                    editHoursContainer.classList.remove('hidden');
                 } else {
                     adminLink.classList.add('hidden');
                     adminOnlyFeatures.classList.add('hidden');
+                    editHoursContainer.classList.add('hidden');
                 }
                 createArticleBtn.classList.remove('hidden');
                 addRecommendationBtn.classList.remove('hidden');
@@ -1170,6 +1376,7 @@
                 createArticleBtn.classList.add('hidden');
                 adminOnlyFeatures.classList.add('hidden');
                 addRecommendationBtn.classList.add('hidden');
+                editHoursContainer.classList.add('hidden');
             }
             loadNotifications();
         }
@@ -1413,35 +1620,42 @@
                 const data = await fetchBinData();
                 const users = data.users || [];
                 container.innerHTML = `
-                    <table class="w-full text-left border-collapse min-w-[500px]">
+                    <table class="w-full text-left border-collapse min-w-[600px]">
                         <thead>
                             <tr class="border-b text-sm text-slate-500">
                                 <th class="py-2">Tài khoản</th>
                                 <th class="py-2">Email</th>
                                 <th class="py-2">Trạng thái</th>
+                                <th class="py-2">VNeID</th>
                                 <th class="py-2">Vai trò</th>
                                 <th class="py-2">Hành động</th>
                             </tr>
                         </thead>
                         <tbody>
-                            ${users.map(u => `
-                                <tr class="border-b">
-                                    <td class="py-3 font-semibold">@${u.username}</td>
-                                    <td class="py-3 text-slate-600 text-sm">${u.email || 'Chưa có'}</td>
-                                    <td class="py-3"><span class="px-2 py-1 text-xs rounded ${u.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">${u.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}</span></td>
-                                    <td class="py-3 uppercase text-xs font-bold">${u.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}</td>
-                                    <td class="py-3 space-x-1 space-y-1">
-                                        ${u.status === 'pending' ? `<button onclick="approveUser('${u.username}')" class="bg-green-600 text-white px-2.5 py-1 rounded text-xs">Duyệt</button>` : ''}
-                                        <button onclick="toggleRenameLock('${u.username}')" class="px-2.5 py-1 rounded text-xs text-white ${u.canRename !== false ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'}">
-                                            ${u.canRename !== false ? 'Được đổi tên' : 'Đã khóa'}
-                                        </button>
-                                        <button onclick="openAdminChangePass('${u.username}')" class="bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 rounded text-xs">Đổi MK</button>
-                                        <button onclick="openAdminEditEmail('${u.username}', '${u.email || ''}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded text-xs">Sửa Email</button>
-                                        ${u.role !== 'admin' ? `<button onclick="makeAdmin('${u.username}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded text-xs">Chuyển Admin</button>` : ''}
-                                        <button onclick="deleteUser('${u.username}')" class="bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded text-xs">Xóa</button>
-                                    </td>
-                                </tr>
-                            `).join('')}
+                            ${users.map(u => {
+                                const vneidStatusText = u.vneidStatus === 'verified' 
+                                    ? '<span class="px-2 py-1 text-xs rounded bg-emerald-100 text-emerald-700">Đã xác thực</span>' 
+                                    : (u.vneidStatus === 'pending' ? '<span class="px-2 py-1 text-xs rounded bg-amber-100 text-amber-700">Đang chờ</span>' : '<span class="px-2 py-1 text-xs rounded bg-slate-100 text-slate-600">Chưa liên kết</span>');
+                                return `
+                                    <tr class="border-b">
+                                        <td class="py-3 font-semibold">@${u.username}</td>
+                                        <td class="py-3 text-slate-600 text-sm">${u.email || 'Chưa có'}</td>
+                                        <td class="py-3"><span class="px-2 py-1 text-xs rounded ${u.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">${u.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}</span></td>
+                                        <td class="py-3">${vneidStatusText}</td>
+                                        <td class="py-3 uppercase text-xs font-bold">${u.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}</td>
+                                        <td class="py-3 space-x-1 space-y-1">
+                                            ${u.status === 'pending' ? `<button onclick="approveUser('${u.username}')" class="bg-green-600 text-white px-2.5 py-1 rounded text-xs">Duyệt</button>` : ''}
+                                            <button onclick="toggleRenameLock('${u.username}')" class="px-2.5 py-1 rounded text-xs text-white ${u.canRename !== false ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'}">
+                                                ${u.canRename !== false ? 'Được đổi tên' : 'Đã khóa'}
+                                            </button>
+                                            <button onclick="openAdminChangePass('${u.username}')" class="bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 rounded text-xs">Đổi MK</button>
+                                            <button onclick="openAdminEditEmail('${u.username}', '${u.email || ''}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded text-xs">Sửa Email</button>
+                                            ${u.role !== 'admin' ? `<button onclick="makeAdmin('${u.username}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded text-xs">Chuyển Admin</button>` : ''}
+                                            <button onclick="deleteUser('${u.username}')" class="bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded text-xs">Xóa</button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
                         </tbody>
                     </table>
                 `;
@@ -1606,6 +1820,7 @@
         window.onload = () => {
             applyLogo();
             checkAuthState();
+            loadOperatingHours();
             loadWarnings();
             loadRecommendations();
             checkAndPublishScheduledArticles();
