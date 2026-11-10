@@ -21,7 +21,7 @@
             position: absolute;
             right: 0;
             top: 120%;
-            width: 340px;
+            width: 300px;
             max-height: 380px;
             background: #ffffff;
             border-radius: 12px;
@@ -51,14 +51,6 @@
             max-height: 320px;
         }
 
-        .notification-list::-webkit-scrollbar {
-            width: 5px;
-        }
-        .notification-list::-webkit-scrollbar-thumb {
-            background: #d1d5db;
-            border-radius: 4px;
-        }
-
         .notification-item {
             padding: 12px 16px;
             border-bottom: 1px solid #f9fafb;
@@ -78,19 +70,12 @@
             font-size: 13px;
             font-weight: 600;
             color: #111827;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
             margin-bottom: 4px;
         }
 
         .notification-item-desc {
             font-size: 12px;
             color: #4b5563;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
             line-height: 1.4;
         }
 
@@ -107,14 +92,19 @@
     <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             
-            <!-- Logo chính thức -->
+            <!-- Logo & Nút Menu Mobile -->
             <div class="flex items-center space-x-3">
-                <img src="https://sv2.anhsieuviet.com/2026/10/11/THoaTV.jpg" alt="THoaTV Logo" class="w-10 h-10 rounded-lg object-cover shadow-sm">
-                <span class="text-xl font-bold text-indigo-600">THoaTV</span>
+                <button id="mobileMenuBtn" class="md:hidden text-gray-600 hover:text-indigo-600 focus:outline-none text-xl p-1">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="flex items-center space-x-2">
+                    <img src="https://sv2.anhsieuviet.com/2026/10/11/THoaTV.jpg" alt="THoaTV Logo" class="w-9 h-9 rounded-lg object-cover shadow-sm">
+                    <span class="text-lg sm:text-xl font-bold text-indigo-600">THoaTV</span>
+                </div>
             </div>
 
-            <!-- Menu chính -->
-            <nav class="hidden md:flex space-x-6 text-sm font-medium items-center">
+            <!-- Menu chính (Desktop) -->
+            <nav class="hidden md:flex space-x-5 text-sm font-medium items-center">
                 <a href="#" class="text-indigo-600 font-semibold">Trang Chủ</a>
                 <a href="https://thoatv-lichphatsong.vercel.app/" target="_blank" class="text-gray-600 hover:text-indigo-600">Lịch Phát Sóng</a>
                 <a href="https://hue.gov.vn/vi-vn/Trang-chu/He-thong-van-ban-phap-luat/doc/all?utm_source=chatgpt.com" target="_blank" class="text-gray-600 hover:text-indigo-600">Tra Cứu Văn Bản</a>
@@ -122,59 +112,75 @@
                 <a href="mailto:daithoatv@gmail.com" class="text-gray-600 hover:text-indigo-600">Phản Ánh</a>
             </nav>
 
-            <!-- Tiện ích bên phải -->
-            <div class="flex items-center space-x-4">
+            <!-- Tiện ích bên phải (Chuông & Tài khoản) -->
+            <div class="flex items-center space-x-2 sm:space-x-4">
                 
                 <!-- Chuông thông báo -->
                 <div class="notification-wrapper">
-                    <button class="relative bg-transparent border-none text-xl text-indigo-600 cursor-pointer p-2 rounded-full hover:bg-gray-100 transition" id="bellBtn">
+                    <button class="relative bg-transparent border-none text-lg sm:text-xl text-indigo-600 cursor-pointer p-2 rounded-full hover:bg-gray-100 transition" id="bellBtn">
                         <i class="fa-solid fa-bell"></i>
-                        <span class="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full" id="notifBadge" style="display: none;">0</span>
+                        <span class="absolute top-0.5 right-0.5 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full" id="notifBadge" style="display: none;">0</span>
                     </button>
 
                     <div class="notification-dropdown" id="notifDropdown">
                         <div class="notification-header">
                             <h4 class="text-sm font-bold text-gray-800 m-0">Thông Báo</h4>
-                            <button class="bg-none border-none text-indigo-600 text-xs font-semibold cursor-pointer hover:underline" id="markAllReadBtn">Đánh dấu tất cả đã đọc</button>
+                            <button class="bg-none border-none text-indigo-600 text-xs font-semibold cursor-pointer hover:underline" id="markAllReadBtn">Đã đọc tất cả</button>
                         </div>
                         <div class="notification-list" id="notifList"></div>
                     </div>
                 </div>
 
                 <!-- Khu vực tài khoản / Đăng nhập -->
-                <div id="authArea" class="flex items-center space-x-2">
-                    <button onclick="openAuthModal()" class="text-sm font-medium text-white bg-indigo-600 px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow-sm">
-                        Đăng Nhập / Đăng Ký
+                <div id="authArea" class="flex items-center">
+                    <button onclick="openAuthModal()" class="text-xs sm:text-sm font-medium text-white bg-indigo-600 px-3 sm:px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow-sm">
+                        Đăng Nhập
                     </button>
                 </div>
 
             </div>
 
         </div>
+
+        <!-- Menu thả xuống cho Mobile -->
+        <div id="mobileMenu" class="hidden md:hidden bg-white border-t border-gray-100 px-4 pt-2 pb-4 space-y-2">
+            <a href="#" class="block py-2 text-indigo-600 font-semibold text-sm">Trang Chủ</a>
+            <a href="https://thoatv-lichphatsong.vercel.app/" target="_blank" class="block py-2 text-gray-600 hover:text-indigo-600 text-sm">Lịch Phát Sóng</a>
+            <a href="https://hue.gov.vn/vi-vn/Trang-chu/He-thong-van-ban-phap-luat/doc/all?utm_source=chatgpt.com" target="_blank" class="block py-2 text-gray-600 hover:text-indigo-600 text-sm">Tra Cứu Văn Bản</a>
+            <button onclick="openRulesModal(); toggleMobileMenu();" class="block py-2 text-gray-600 hover:text-indigo-600 text-sm w-full text-left font-medium">Quy Chế</button>
+            <a href="mailto:daithoatv@gmail.com" class="block py-2 text-gray-600 hover:text-indigo-600 text-sm">Phản Ánh</a>
+        </div>
     </header>
 
     <!-- NỘI DUNG CHÍNH -->
-    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
         
-        <!-- Khối thông tin giới thiệu -->
-        <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <h3 class="font-bold text-gray-900 mb-2">Thông tin tiếp nhận phản ánh</h3>
-                <p class="text-sm text-gray-600">Mọi ý kiến đóng góp của người dân xin vui lòng gửi trực tiếp về hộp thư điện tử chính thức: <a href="mailto:daithoatv@gmail.com" class="text-indigo-600 font-medium underline">daithoatv@gmail.com</a></p>
+        <!-- Khối thông tin giới thiệu & Giờ hoạt động -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                <h3 class="font-bold text-gray-900 mb-1 text-sm sm:text-base">Thông tin phản ánh</h3>
+                <p class="text-xs sm:text-sm text-gray-600">Gửi về hộp thư chính thức: <a href="mailto:daithoatv@gmail.com" class="text-indigo-600 font-medium underline">daithoatv@gmail.com</a></p>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <h3 class="font-bold text-gray-900 mb-2">Trạng thái dữ liệu đám mây</h3>
-                <p class="text-sm text-gray-600">Hệ thống kiểm soát tài khoản qua Admin, bài đăng hiển thị công khai ngay lập tức và hỗ trợ xóa bài trực tuyến.</p>
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex justify-between items-start mb-1">
+                    <h3 class="font-bold text-gray-900 text-sm sm:text-base">Giờ Hoạt Động</h3>
+                    <div id="editWorkingHoursBtnContainer"></div>
+                </div>
+                <p id="displayWorkingHours" class="text-xs sm:text-sm font-semibold text-indigo-600">07:00 - 17:00 (Thứ Hai đến Thứ Sáu)</p>
+            </div>
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                <h3 class="font-bold text-gray-900 mb-1 text-sm sm:text-base">Trạng thái đám mây</h3>
+                <p class="text-xs sm:text-sm text-gray-600">Đồng bộ trực tuyến qua JSONBin.io & xác thực Email OTP.</p>
             </div>
         </section>
 
         <!-- Khối Bài Viết Mới Nhất -->
         <section>
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
                 <div class="border-l-4 border-indigo-600 pl-3">
-                    <h2 class="text-xl font-bold text-gray-900">Bài Viết Mới Nhất</h2>
+                    <h2 class="text-lg sm:text-xl font-bold text-gray-900">Bài Viết Mới Nhất</h2>
                 </div>
-                <div id="createPostBtnContainer" class="flex items-center space-x-2"></div>
+                <div id="createPostBtnContainer" class="flex flex-wrap items-center gap-2 w-full sm:w-auto"></div>
             </div>
             
             <div id="latestPostsContainer" class="text-center py-12 bg-white rounded-xl border border-dashed border-gray-200">
@@ -190,45 +196,22 @@
             <button onclick="closeRulesModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
-            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                <i class="fa-solid fa-book-open text-indigo-600 mr-2"></i> Quy Định Sử Dụng và Đăng Tải Nội Dung THoaTV
+            <h3 class="text-base sm:text-lg font-bold text-gray-900 mb-4 flex items-center">
+                <i class="fa-solid fa-book-open text-indigo-600 mr-2"></i> Quy Định Sử Dụng THoaTV
             </h3>
-            <div class="overflow-y-auto space-y-4 text-sm text-gray-700 pr-2 flex-grow border-t border-b border-gray-100 py-3">
-                
+            <div class="overflow-y-auto space-y-4 text-xs sm:text-sm text-gray-700 pr-2 flex-grow border-t border-b border-gray-100 py-3">
                 <div>
-                    <h4 class="font-bold text-indigo-700">Điều 1. Nguyên tắc chung & Phạm vi thông tin</h4>
-                    <p class="mt-1">1. THoaTV là nền tảng mô phỏng mạng xã hội, nơi người dùng có thể chia sẻ bài viết và trao đổi thông tin thuộc phạm vi Việt Nam, quốc gia/vũng lãnh thổ trên thế giới, sự kiện thời sự, vấn đề xã hội, chính sách, quản lý nhà nước, văn hóa, giáo dục, khoa học công nghệ và đời sống.</p>
-                    <p>2. Người dùng phải tuân thủ quy định sử dụng THoaTV và pháp luật Việt Nam.</p>
-                    <p>3. Mỗi người dùng chịu trách nhiệm hoàn toàn về nội dung do mình đăng tải.</p>
-                    <p>4. Không được lợi dụng THoaTV để đăng tải thông tin sai sự thật, gây hiểu nhầm, xúc phạm hoặc xâm phạm quyền và lợi ích hợp pháp của tổ chức, cá nhân khác.</p>
+                    <h4 class="font-bold text-indigo-700">Điều 1. Nguyên tắc chung</h4>
+                    <p class="mt-1">THoaTV là nền tảng chia sẻ bài viết cộng đồng Phường Thuận Hóa. Người dùng chịu trách nhiệm hoàn toàn về nội dung do mình đăng tải.</p>
                 </div>
-
                 <div>
-                    <h4 class="font-bold text-indigo-700">Điều 2. Phân quyền tài khoản</h4>
-                    <p class="mt-1"><strong>1. Admin – Quản trị viên:</strong> Quản lý toàn bộ hệ thống; quản lý tài khoản Member; phê duyệt tài khoản đăng ký mới; xem, quản lý và xử lý bài viết; gỡ hoặc xóa bài viết sai sự thật/vi phạm; gửi cảnh báo; tiếp nhận báo cáo/khiếu nại; lưu lại lịch sử xử lý nội dung; khóa tài khoản vi phạm và phối hợp với cơ quan có thẩm quyền khi có yêu cầu hợp pháp.</p>
-                    <p><strong>2. Member – Thành viên:</strong> Đăng ký tài khoản và chờ Admin phê duyệt để đăng nhập. Được đăng bài công khai trực tiếp ngay sau khi gửi, được chỉnh sửa hoặc xóa bài viết của chính mình; phải chịu trách nhiệm về nội dung đã đăng và hợp tác khi Admin cần xác minh nội dung.</p>
-                    <p><strong>3. Guest – Khách:</strong> Được xem các bài viết công khai, không có quyền đăng bài hay quản trị hệ thống.</p>
+                    <h4 class="font-bold text-indigo-700">Điều 2. Phân quyền</h4>
+                    <p class="mt-1"><strong>Admin:</strong> Quản lý hệ thống, duyệt tài khoản, sửa giờ hoạt động, đăng thông báo, gỡ bài viết vi phạm. <br><strong>Member:</strong> Đăng ký chờ duyệt tài khoản, được đăng bài và tự xóa bài của mình.</p>
                 </div>
-
                 <div>
-                    <h4 class="font-bold text-indigo-700">Điều 3. Quy định đăng bài & Nguyên tắc thông tin</h4>
-                    <p class="mt-1">1. Member phải tuân thủ nguyên tắc: Thông tin trung thực, không cố ý gây hiểu lầm; không tự ý biến suy đoán thành sự thật; khuyến khích dẫn nguồn tham khảo; phân biệt rõ thông tin được xác nhận và ý kiến cá nhân; không giả mạo cơ quan nhà nước, tổ chức hoặc cá nhân.</p>
-                    <p>2. Tiêu đề và nội dung là bắt buộc; hình ảnh, video và nguồn tham khảo là tùy chọn nhưng được khuyến khích.</p>
+                    <h4 class="font-bold text-indigo-700">Điều 3. Nội dung cấm</h4>
+                    <p class="mt-1">Tuyệt đối không lợi dụng THoaTV đăng tải nội dung dưới hình thức: <em>Phóng sự báo chí, Điều tra báo chí, Phỏng vấn báo chí</em> (Điều 28 Nghị định 147/2024/NĐ-CP).</p>
                 </div>
-
-                <div>
-                    <h4 class="font-bold text-indigo-700">Điều 4. Nội dung và Hình thức bị cấm</h4>
-                    <p class="mt-1">1. <strong>Nội dung cấm:</strong> Thông tin bịa đặt, xuyên tạc; xâm phạm quyền/lợi ích hợp pháp của người khác; kích động bạo lực, thù hận; lộ thông tin riêng tư trái phép; vi phạm bản quyền, lừa đảo.</p>
-                    <p>2. <strong>Hình thức cấm:</strong> Member tuyệt đối không lợi dụng THoaTV để sản xuất và đăng tải nội dung dưới hình thức: <em>Phóng sự báo chí, Điều tra báo chí, Phỏng vấn báo chí</em> (Giới hạn tại Điều 28 Nghị định 147/2024/NĐ-CP).</p>
-                </div>
-
-                <div>
-                    <h4 class="font-bold text-indigo-700">Điều 5. Xử lý vi phạm và Báo cáo nội dung</h4>
-                    <p class="mt-1">1. Admin có quyền gỡ bài viết sai sự thật, gây hiểu nhầm hoặc vi phạm và gửi cảnh báo kèm lý do đến Member.</p>
-                    <p>2. Member có quyền giải trình hoặc cung cấp nguồn tham khảo đối chứng.</p>
-                    <p>3. Người dùng có thể báo cáo bài viết có dấu hiệu vi phạm để Admin kiểm tra và xử lý.</p>
-                </div>
-
             </div>
             <div class="mt-4 text-right">
                 <button onclick="closeRulesModal()" class="bg-indigo-600 text-white px-5 py-2 rounded-lg text-xs font-semibold hover:bg-indigo-700">Đã Hiểu</button>
@@ -236,46 +219,53 @@
         </div>
     </div>
 
-    <!-- MODAL ĐĂNG NHẬP / ĐĂNG KÝ (EMAIL OTP VỚI QUY CHẾ) -->
+    <!-- MODAL SỬA GIỜ HOẠT ĐỘNG (ADMIN) -->
+    <div id="workingHoursModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl relative">
+            <button onclick="closeWorkingHoursModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-lg font-bold text-gray-900 mb-4"><i class="fa-solid fa-clock text-indigo-600 mr-2"></i> Cập Nhật Giờ Hoạt Động</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Thời gian hoạt động mới</label>
+                    <input type="text" id="workingHoursInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <button onclick="saveWorkingHours()" class="w-full bg-indigo-600 text-white font-medium py-2.5 rounded-lg hover:bg-indigo-700 transition text-sm">
+                    Lưu Thay Đổi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ĐĂNG NHẬP / ĐĂNG KÝ -->
     <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl relative animate-fade-in max-h-[90vh] flex flex-col">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl relative animate-fade-in max-h-[90vh] flex flex-col">
             <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
-
             <div class="text-center mb-4">
-                <h3 class="text-xl font-bold text-gray-900">Xác thực tài khoản THoaTV</h3>
-                <p class="text-xs text-gray-500 mt-1">Đăng nhập hoặc đăng ký nhanh chóng bằng Email OTP</p>
+                <h3 class="text-lg sm:text-xl font-bold text-gray-900">Xác thực tài khoản THoaTV</h3>
+                <p class="text-xs text-gray-500 mt-1">Đăng nhập hoặc đăng ký bằng Email OTP</p>
             </div>
-
-            <!-- Bước 1: Nhập Email & Đọc Quy Chế -->
             <div id="stepEmail" class="space-y-4 flex-grow flex flex-col overflow-hidden">
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Địa chỉ Email của bạn</label>
                     <input type="email" id="userEmailInput" placeholder="nhapemail@example.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
-
-                <!-- Khung Tóm tắt Quy chế chính thức -->
-                <div class="flex-grow border border-gray-200 bg-gray-50 rounded-lg p-3 text-xs overflow-y-auto max-h-48 space-y-2 text-gray-700">
-                    <p class="font-bold text-indigo-700 text-center mb-1">QUY ĐỊNH SỬ DỤNG VÀ ĐĂNG TẢI NỘI DUNG</p>
-                    <p><strong>• Nguyên tắc:</strong> Người dùng tự chịu trách nhiệm về nội dung bài viết. Không đăng thông tin bịa đặt, sai sự thật.</p>
-                    <p><strong>• Phân quyền:</strong> Member đăng ký phải chờ Admin duyệt tài khoản mới có thể đăng nhập. Bài viết đăng lên được hiển thị công khai ngay.</p>
-                    <p><strong>• Nội dung bị cấm:</strong> Cấm lợi dụng THoaTV đăng tải <em>Phóng sự báo chí, Điều tra báo chí, Phỏng vấn báo chí</em> (Điều 28 Nghị định 147/2024/NĐ-CP).</p>
-                    <p><strong>• Xử lý vi phạm:</strong> Admin có quyền gỡ bài viết vi phạm, gửi cảnh báo đến Member theo Điều 5 Quy chế.</p>
+                <div class="flex-grow border border-gray-200 bg-gray-50 rounded-lg p-3 text-xs overflow-y-auto max-h-40 space-y-1 text-gray-700">
+                    <p class="font-bold text-indigo-700 text-center">QUY ĐỊNH SỬ DỤNG</p>
+                    <p>• Thành viên đăng ký cần Admin phê duyệt tài khoản để đăng nhập.</p>
+                    <p>• Không đăng thông tin sai sự thật hoặc trái quy định pháp luật.</p>
                 </div>
-
-                <!-- Đồng ý điều khoản -->
                 <div class="flex items-center space-x-2">
                     <input type="checkbox" id="agreeTerms" class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
-                    <label for="agreeTerms" class="text-xs text-gray-700 font-medium">Tôi đã đọc và đồng ý với Quy chế hoạt động THoaTV</label>
+                    <label for="agreeTerms" class="text-xs text-gray-700 font-medium">Tôi đã đồng ý với Quy chế hoạt động</label>
                 </div>
-
                 <button onclick="sendOtpCode()" class="w-full bg-indigo-600 text-white font-medium py-2.5 rounded-lg hover:bg-indigo-700 transition text-sm">
                     Gửi Mã OTP qua Email
                 </button>
             </div>
-
-            <!-- Bước 2: Nhập Mã OTP -->
             <div id="stepOtp" class="space-y-4 hidden">
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Mã OTP đã gửi tới email</label>
@@ -301,11 +291,11 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Tiêu đề bài viết</label>
-                    <input type="text" id="postTitle" placeholder="Nhập tiêu đề..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" id="postTitle" placeholder="Tiêu đề..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Nội dung chi tiết</label>
-                    <textarea id="postContent" rows="4" placeholder="Nhập nội dung bài viết cộng đồng..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    <textarea id="postContent" rows="4" placeholder="Nội dung..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
                 </div>
                 <button onclick="submitNewPost()" class="w-full bg-indigo-600 text-white font-medium py-2.5 rounded-lg hover:bg-indigo-700 transition text-sm">
                     Đăng Bài Lên Hệ Thống
@@ -324,11 +314,11 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Tiêu đề thông báo</label>
-                    <input type="text" id="notifTitleInput" placeholder="Ví dụ: [Thông báo từ Admin]..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" id="notifTitleInput" placeholder="Tiêu đề..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Nội dung thông báo</label>
-                    <textarea id="notifDescInput" rows="3" placeholder="Nhập chi tiết nội dung thông báo..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    <textarea id="notifDescInput" rows="3" placeholder="Nội dung..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
                 </div>
                 <button onclick="submitNewNotification()" class="w-full bg-indigo-600 text-white font-medium py-2.5 rounded-lg hover:bg-indigo-700 transition text-sm">
                     Phát Hành Thông Báo
@@ -343,7 +333,7 @@
             <button onclick="closeAdminModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
-            <h3 class="text-lg font-bold text-gray-900 mb-4"><i class="fa-solid fa-shield-halved text-red-600 mr-2"></i> Trang Quản Trị - Duyệt Tài Khoản Đăng Ký</h3>
+            <h3 class="text-lg font-bold text-gray-900 mb-4"><i class="fa-solid fa-shield-halved text-red-600 mr-2"></i> Duyệt Tài Khoản Đăng Ký</h3>
             <div id="pendingUsersList" class="overflow-y-auto space-y-3 flex-grow pr-1"></div>
         </div>
     </div>
@@ -355,7 +345,7 @@
         </div>
     </footer>
 
-    <!-- SCRIPT XỬ LÝ DỮ LIỆU ĐÁM MÂY & TÍNH NĂNG -->
+    <!-- SCRIPT XỬ LÝ -->
     <script>
         const JSONBIN_BIN_ID = "6aee9fe5ac6210605a744ebe";
         const JSONBIN_MASTER_KEY = "$2a$10$kTgIqEUufeGM34wotK2GF.LwVKq0otFvRAlNhxhF7O/JgmoN7axca";
@@ -364,8 +354,17 @@
             posts: [],
             users: [],
             notifications: [],
+            workingHours: "07:00 - 17:00 (Thứ Hai đến Thứ Sáu)",
             admin: ""
         };
+
+        // Toggle Mobile Menu
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        function toggleMobileMenu() {
+            mobileMenu.classList.toggle('hidden');
+        }
+        mobileMenuBtn.addEventListener('click', toggleMobileMenu);
 
         async function fetchDataFromCloud() {
             try {
@@ -376,10 +375,12 @@
                 cloudData.posts = data.record.posts || [];
                 cloudData.users = data.record.users || [];
                 cloudData.notifications = data.record.notifications || [
-                    { id: 1, title: "[Thông báo chung từ Admin]", desc: "Khung giờ hoạt động của THoaTV là từ 07:00 đến 17:00, Thứ Hai đến Thứ Sáu.", time: "10 phút trước", isRead: false },
-                    { id: 2, title: "[Thông báo từ Admin]", desc: "Căn cứ các quy định Nghị định 320/2026/NĐ-CP và Nghị định 69/2024/NĐ-CP về định danh điện tử, THoaTV quyết định không thực hiện tích hợp liên kết trực tiếp với VNeID.", time: "1 giờ trước", isRead: false }
+                    { id: 1, title: "[Thông báo chung từ Admin]", desc: "Khung giờ hoạt động của THoaTV là từ 07:00 đến 17:00, Thứ Hai đến Thứ Sáu.", time: "10 phút trước", isRead: false }
                 ];
+                cloudData.workingHours = data.record.workingHours || "07:00 - 17:00 (Thứ Hai đến Thứ Sáu)";
                 cloudData.admin = data.record.admin || "";
+                
+                document.getElementById('displayWorkingHours').textContent = cloudData.workingHours;
                 renderPosts();
                 renderNotifications();
             } catch (error) {
@@ -399,6 +400,7 @@
                     body: JSON.stringify(cloudData)
                 });
                 if (response.ok) {
+                    document.getElementById('displayWorkingHours').textContent = cloudData.workingHours;
                     renderPosts();
                     renderNotifications();
                 }
@@ -425,18 +427,18 @@
                 const canDelete = currentUser && (currentUser === post.author || currentUser === cloudData.admin);
 
                 const postCard = `
-                    <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div class="bg-white p-4 sm:p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
                         <div>
                             <div class="flex justify-between items-start mb-1">
-                                <h4 class="font-bold text-gray-900 text-base">${post.title}</h4>
+                                <h4 class="font-bold text-gray-900 text-sm sm:text-base">${post.title}</h4>
                                 ${canDelete ? `
                                     <button onclick="deletePost(${post.id})" class="text-gray-400 hover:text-red-600 transition p-1" title="Xóa bài viết">
                                         <i class="fa-solid fa-trash-can text-sm"></i>
                                     </button>
                                 ` : ''}
                             </div>
-                            <p class="text-xs text-gray-400 mb-3"><i class="fa-regular fa-clock mr-1"></i> ${post.time} • <span class="text-indigo-600 font-medium">${post.author}</span></p>
-                            <p class="text-sm text-gray-700 line-clamp-3 mb-4">${post.content}</p>
+                            <p class="text-[11px] sm:text-xs text-gray-400 mb-3"><i class="fa-regular fa-clock mr-1"></i> ${post.time} • <span class="text-indigo-600 font-medium">${post.author}</span></p>
+                            <p class="text-xs sm:text-sm text-gray-700 line-clamp-3 mb-4">${post.content}</p>
                         </div>
                     </div>
                 `;
@@ -447,7 +449,6 @@
         async function deletePost(postId) {
             if(confirm('Bạn có chắc chắn muốn xóa bài viết này không?')) {
                 cloudData.posts = cloudData.posts.filter(p => p.id !== postId);
-                alert('Đang xóa bài viết...');
                 await saveDataToCloud();
                 alert('Xóa bài viết thành công!');
             }
@@ -477,7 +478,6 @@
             };
 
             cloudData.posts.unshift(newPost);
-            alert('Đang đăng bài viết lên hệ thống...');
             await saveDataToCloud();
 
             document.getElementById('postTitle').value = '';
@@ -561,7 +561,6 @@
             };
 
             cloudData.notifications.unshift(newNotif);
-            alert('Đang phát hành thông báo...');
             await saveDataToCloud();
 
             document.getElementById('notifTitleInput').value = '';
@@ -570,12 +569,31 @@
             alert('Đăng thông báo thành công!');
         }
 
-        // --- XỬ LÝ MODAL QUY CHẾ ---
+        // --- CẬP NHẬT GIỜ HOẠT ĐỘNG (ADMIN) ---
+        const workingHoursModal = document.getElementById('workingHoursModal');
+        function openWorkingHoursModal() {
+            document.getElementById('workingHoursInput').value = cloudData.workingHours;
+            workingHoursModal.classList.remove('hidden');
+        }
+        function closeWorkingHoursModal() { workingHoursModal.classList.add('hidden'); }
+
+        async function saveWorkingHours() {
+            const newHours = document.getElementById('workingHoursInput').value.trim();
+            if(!newHours) {
+                alert('Vui lòng nhập giờ hoạt động!');
+                return;
+            }
+            cloudData.workingHours = newHours;
+            await saveDataToCloud();
+            closeWorkingHoursModal();
+            alert('Đã cập nhật giờ hoạt động mới thành công!');
+        }
+
+        // --- XỬ LÝ QUY CHẾ & ĐĂNG NHẬP ---
         const rulesModal = document.getElementById('rulesModal');
         function openRulesModal() { rulesModal.classList.remove('hidden'); }
         function closeRulesModal() { rulesModal.classList.add('hidden'); }
 
-        // --- XỬ LÝ ĐĂNG NHẬP & QUY CHẾ ---
         const authModal = document.getElementById('authModal');
         const stepEmail = document.getElementById('stepEmail');
         const stepOtp = document.getElementById('stepOtp');
@@ -589,9 +607,7 @@
             document.getElementById('agreeTerms').checked = false;
         }
 
-        function closeAuthModal() {
-            authModal.classList.add('hidden');
-        }
+        function closeAuthModal() { authModal.classList.add('hidden'); }
 
         function sendOtpCode() {
             const email = document.getElementById('userEmailInput').value.trim();
@@ -601,7 +617,6 @@
                 alert('Vui lòng nhập địa chỉ email của bạn!');
                 return;
             }
-
             if(!agreeTerms) {
                 alert('Vui lòng đọc và tích chọn đồng ý với Quy chế sử dụng trước khi tiếp tục!');
                 return;
@@ -648,7 +663,7 @@
                     cloudData.users.push({ email: pendingLoginEmail, status: 'pending' });
                     await saveDataToCloud();
                     closeAuthModal();
-                    alert('Đăng ký tài khoản thành công! Tài khoản của bạn đang chờ Admin duyệt để có thể đăng nhập.');
+                    alert('Đăng ký tài khoản thành công! Tài khoản của bạn đang chờ Admin duyệt.');
                     return;
                 }
 
@@ -677,9 +692,9 @@
             const authArea = document.getElementById('authArea');
             if(authArea) {
                 authArea.innerHTML = `
-                    <div class="flex items-center space-x-2 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100">
-                        <i class="fa-solid fa-user-check text-indigo-600 text-sm"></i>
-                        <span class="text-xs font-semibold text-indigo-700 truncate max-w-[140px]">${email} ${email === cloudData.admin ? '(Admin)' : ''}</span>
+                    <div class="flex items-center space-x-1.5 bg-indigo-50 px-2.5 py-1.5 rounded-lg border border-indigo-100">
+                        <i class="fa-solid fa-user-check text-indigo-600 text-xs"></i>
+                        <span class="text-[11px] sm:text-xs font-semibold text-indigo-700 truncate max-w-[100px] sm:max-w-[140px]">${email} ${email === cloudData.admin ? '(Admin)' : ''}</span>
                         <button onclick="logoutUser()" class="text-gray-400 hover:text-red-600 ml-1" title="Đăng xuất">
                             <i class="fa-solid fa-right-from-bracket text-xs"></i>
                         </button>
@@ -689,23 +704,33 @@
 
             const createPostBtnContainer = document.getElementById('createPostBtnContainer');
             let buttonsHTML = `
-                <button onclick="openPostModal()" class="bg-indigo-600 text-white text-xs font-semibold px-3.5 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center space-x-1.5 shadow-sm">
+                <button onclick="openPostModal()" class="bg-indigo-600 text-white text-xs font-semibold px-3 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center space-x-1.5 shadow-sm">
                     <i class="fa-solid fa-plus"></i>
-                    <span>Đăng Bài Mới</span>
+                    <span>Đăng Bài</span>
                 </button>
             `;
 
+            const editWorkingHoursBtnContainer = document.getElementById('editWorkingHoursBtnContainer');
             if(email === cloudData.admin) {
                 buttonsHTML += `
-                    <button onclick="openNotifModal()" class="bg-amber-600 text-white text-xs font-semibold px-3.5 py-2 rounded-lg hover:bg-amber-700 transition flex items-center space-x-1.5 shadow-sm">
+                    <button onclick="openNotifModal()" class="bg-amber-600 text-white text-xs font-semibold px-3 py-2 rounded-lg hover:bg-amber-700 transition flex items-center space-x-1.5 shadow-sm">
                         <i class="fa-solid fa-bullhorn"></i>
-                        <span>Đăng Thông Báo</span>
+                        <span>Thông Báo</span>
                     </button>
-                    <button onclick="openAdminModal()" class="bg-red-600 text-white text-xs font-semibold px-3.5 py-2 rounded-lg hover:bg-red-700 transition flex items-center space-x-1.5 shadow-sm">
+                    <button onclick="openAdminModal()" class="bg-red-600 text-white text-xs font-semibold px-3 py-2 rounded-lg hover:bg-red-700 transition flex items-center space-x-1.5 shadow-sm">
                         <i class="fa-solid fa-user-shield"></i>
-                        <span>Duyệt Tài Khoản</span>
+                        <span>Duyệt User</span>
                     </button>
                 `;
+                if(editWorkingHoursBtnContainer) {
+                    editWorkingHoursBtnContainer.innerHTML = `
+                        <button onclick="openWorkingHoursModal()" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                            <i class="fa-solid fa-pen"></i> Sửa
+                        </button>
+                    `;
+                }
+            } else {
+                if(editWorkingHoursBtnContainer) editWorkingHoursBtnContainer.innerHTML = '';
             }
 
             if(createPostBtnContainer) {
@@ -723,7 +748,6 @@
             stepEmail.classList.remove('hidden');
         }
 
-        // Quản trị duyệt tài khoản
         function openAdminModal() {
             const adminModal = document.getElementById('adminModal');
             const pendingList = document.getElementById('pendingUsersList');
@@ -735,12 +759,12 @@
             } else {
                 pendingUsers.forEach(user => {
                     pendingList.innerHTML += `
-                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 flex justify-between items-center">
+                        <div class="bg-gray-50 p-3 sm:p-4 rounded-xl border border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <div>
-                                <p class="text-sm font-bold text-gray-900">${user.email}</p>
-                                <span class="text-[11px] bg-yellow-100 text-yellow-800 font-semibold px-2 py-0.5 rounded">Chờ duyệt đăng nhập</span>
+                                <p class="text-xs sm:text-sm font-bold text-gray-900">${user.email}</p>
+                                <span class="text-[10px] sm:text-[11px] bg-yellow-100 text-yellow-800 font-semibold px-2 py-0.5 rounded">Chờ duyệt đăng nhập</span>
                             </div>
-                            <div class="space-x-2">
+                            <div class="space-x-2 w-full sm:w-auto text-right">
                                 <button onclick="approveUser('${user.email}')" class="bg-green-600 text-white text-xs px-3 py-1.5 rounded hover:bg-green-700 font-medium">Phê Duyệt</button>
                                 <button onclick="rejectUser('${user.email}')" class="bg-red-600 text-white text-xs px-3 py-1.5 rounded hover:bg-red-700 font-medium">Từ Chối</button>
                             </div>
@@ -751,9 +775,7 @@
             adminModal.classList.remove('hidden');
         }
 
-        function closeAdminModal() {
-            document.getElementById('adminModal').classList.add('hidden');
-        }
+        function closeAdminModal() { document.getElementById('adminModal').classList.add('hidden'); }
 
         async function approveUser(email) {
             cloudData.users = cloudData.users.map(u => {
