@@ -3,1766 +3,788 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THoaTV - Kênh Thông Tin & Giải Trí</title>
-    <!-- Tailwind CSS CDN -->
+    <title>THoaTV - Cổng Thông Tin và Truyền Hình Phường Thuận Hóa</title>
+    <!-- FontAwesome icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- EmailJS SDK -->
+    <!-- Thư viện EmailJS cho tính năng gửi OTP -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <script type="text/javascript">
-        (function() {
-            emailjs.init("qzL3Psz5UVwGWWa0v");
-        })();
-    </script>
-</head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
 
-    <!-- Header / Navigation -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex justify-between items-center w-full md:w-auto">
-                <a href="#" onclick="switchView('home')" class="flex items-center space-x-2 text-2xl font-black text-indigo-600 tracking-wider">
-                    <img id="nav-logo-img" src="https://via.placeholder.com/40" alt="Logo" class="w-9 h-9 object-cover rounded-full hidden">
-                    <span id="nav-logo-text">THoaTV</span>
-                </a>
-            </div>
+    <style>
+        .notification-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            right: 0;
+            top: 120%;
+            width: 340px;
+            max-height: 380px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .notification-dropdown.show {
+            display: flex;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            background: #fafafa;
+        }
+
+        .notification-list {
+            overflow-y: auto;
+            max-height: 320px;
+        }
+
+        .notification-list::-webkit-scrollbar {
+            width: 5px;
+        }
+        .notification-list::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 4px;
+        }
+
+        .notification-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f9fafb;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .notification-item:hover {
+            background: #f9fafb;
+        }
+
+        .notification-item.unread {
+            background: #eef2ff;
+        }
+
+        .notification-item-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #111827;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+
+        .notification-item-desc {
+            font-size: 12px;
+            color: #4b5563;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        .notification-item-time {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen">
+
+    <!-- HEADER / THANH ĐIỀU HƯỚNG -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             
-            <nav class="flex flex-wrap justify-center items-center gap-4 md:space-x-6">
-                <a href="#" onclick="switchView('home')" class="text-slate-600 hover:text-indigo-600 font-medium transition text-sm md:text-base">Trang Chủ</a>
-                <a href="https://thoatv-lichphatsong.vercel.app" target="_blank" class="text-slate-600 hover:text-indigo-600 font-medium transition text-sm md:text-base">Lịch Phát Sóng</a>
-                <a href="https://hue.gov.vn/vi-vn/Trang-chu/He-thong-van-ban-phap-luat/doc/all?utm_source=chatgpt.com" target="_blank" class="text-slate-600 hover:text-indigo-600 font-medium transition text-sm md:text-base">Tra Cứu Văn Bản</a>
-                <a href="mailto:daithoatv@gmail.com?subject=Ph%E1%BA%A3n%20%C3%81nh%20-%20THoaTV" class="text-slate-600 hover:text-indigo-600 font-medium transition text-sm md:text-base">Phản Ánh</a>
-                <div id="nav-admin-link" class="hidden">
-                    <a href="#" onclick="switchView('admin')" class="text-indigo-600 font-bold hover:underline text-sm md:text-base">Quản Trị</a>
-                </div>
+            <!-- Logo chính thức -->
+            <div class="flex items-center space-x-3">
+                <img src="https://sv2.anhsieuviet.com/2026/10/11/THoaTV.jpg" alt="THoaTV Logo" class="w-10 h-10 rounded-lg object-cover shadow-sm">
+                <span class="text-xl font-bold text-indigo-600">THoaTV</span>
+            </div>
+
+            <!-- Menu chính -->
+            <nav class="hidden md:flex space-x-6 text-sm font-medium items-center">
+                <a href="#" class="text-indigo-600 font-semibold">Trang Chủ</a>
+                <a href="https://thoatv-lichphatsong.vercel.app/" target="_blank" class="text-gray-600 hover:text-indigo-600">Lịch Phát Sóng</a>
+                <a href="https://hue.gov.vn/vi-vn/Trang-chu/He-thong-van-ban-phap-luat/doc/all?utm_source=chatgpt.com" target="_blank" class="text-gray-600 hover:text-indigo-600">Tra Cứu Văn Bản</a>
+                <button onclick="openRulesModal()" class="text-gray-600 hover:text-indigo-600 bg-transparent border-none cursor-pointer font-medium text-sm">Quy Chế</button>
+                <a href="mailto:daithoatv@gmail.com" class="text-gray-600 hover:text-indigo-600">Phản Ánh</a>
             </nav>
 
+            <!-- Tiện ích bên phải -->
             <div class="flex items-center space-x-4">
-                <!-- Biểu tượng Chuông Thông Báo -->
-                <div id="notification-bell-container" class="relative">
-                    <button onclick="toggleNotificationDropdown()" class="relative p-2 text-slate-600 hover:text-indigo-600 transition focus:outline-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                        </svg>
-                        <span id="notification-badge" class="absolute top-1 right-1 bg-rose-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+                
+                <!-- Chuông thông báo -->
+                <div class="notification-wrapper">
+                    <button class="relative bg-transparent border-none text-xl text-indigo-600 cursor-pointer p-2 rounded-full hover:bg-gray-100 transition" id="bellBtn">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full" id="notifBadge" style="display: none;">0</span>
                     </button>
 
-                    <!-- Dropdown danh sách thông báo -->
-                    <div id="notification-dropdown" class="absolute right-0 mt-2 w-80 md:w-96 bg-white border border-slate-200 rounded-2xl shadow-xl hidden z-50 overflow-hidden">
-                        <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                            <h4 class="font-bold text-sm text-slate-700">Thông Báo</h4>
-                            <button onclick="markAllNotificationsAsRead()" class="text-xs text-indigo-600 hover:underline font-semibold">Đánh dấu tất cả đã đọc</button>
+                    <div class="notification-dropdown" id="notifDropdown">
+                        <div class="notification-header">
+                            <h4 class="text-sm font-bold text-gray-800 m-0">Thông Báo</h4>
+                            <button class="bg-none border-none text-indigo-600 text-xs font-semibold cursor-pointer hover:underline" id="markAllReadBtn">Đánh dấu tất cả đã đọc</button>
                         </div>
-                        <div id="notification-list" class="max-h-80 overflow-y-auto divide-y divide-slate-100">
-                            <p class="text-xs text-slate-400 text-center py-6">Không có thông báo nào.</p>
-                        </div>
+                        <div class="notification-list" id="notifList"></div>
                     </div>
                 </div>
 
-                <!-- Thanh Auth trên Máy tính -->
-                <div id="auth-nav" class="hidden md:flex items-center space-x-3">
-                    <button onclick="openModal('login-modal')" class="text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-lg font-medium transition">Đăng Nhập</button>
-                    <button onclick="openModal('register-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition">Đăng Ký</button>
+                <!-- Khu vực tài khoản / Đăng nhập -->
+                <div id="authArea" class="flex items-center space-x-2">
+                    <button onclick="openAuthModal()" class="text-sm font-medium text-white bg-indigo-600 px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow-sm">
+                        Đăng Nhập / Đăng Ký
+                    </button>
                 </div>
-            </div>
-        </div>
 
-        <!-- Thanh Auth trên Điện thoại -->
-        <div id="auth-nav-mobile-bar" class="md:hidden bg-slate-100 px-4 py-2.5 flex justify-center items-center space-x-3 border-t border-slate-200">
-            <button onclick="openModal('login-modal')" class="text-indigo-600 text-sm font-medium">Đăng Nhập</button>
-            <span class="text-slate-300">|</span>
-            <button onclick="openModal('register-modal')" class="text-indigo-600 text-sm font-medium">Đăng Ký</button>
+            </div>
+
         </div>
     </header>
 
-    <!-- Main Content Container -->
-    <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full space-y-10">
+    <!-- NỘI DUNG CHÍNH -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         
-        <!-- VIEW: Home / Articles Feed -->
-        <div id="view-home" class="space-y-10">
-            <section class="text-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-3xl p-8 md:p-12 shadow-xl">
-                <h1 class="text-3xl md:text-5xl font-black mb-4">Chào mừng đến với THoaTV</h1>
-                <p class="text-base md:text-lg opacity-90 max-w-2xl mx-auto">Nơi cập nhật thông tin, tin tức và lịch phát sóng nhanh chóng.</p>
-            </section>
-
-            <!-- WIDGET: Khung Giờ Hoạt Động (Operating Hours) -->
-            <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div class="space-y-2 flex-grow">
-                    <div class="flex items-center gap-3">
-                        <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                            <span>🕒</span> Khung Giờ Hoạt Động & Làm Việc
-                        </h2>
-                        <span id="op-status-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">Đang cập nhật...</span>
-                    </div>
-                    <p id="op-hours-desc" class="text-sm text-slate-600">Giờ làm việc: Đang tải thông tin...</p>
-                    <p id="op-note-desc" class="text-xs text-slate-400 italic"></p>
-                </div>
-                <div id="admin-edit-hours-container" class="hidden flex-shrink-0">
-                    <button onclick="openOperatingHoursModal()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-semibold transition">⚙️ Cập Nhật Giờ Hoạt Động</button>
-                </div>
-            </section>
-
-            <!-- Khuyến cáo từ Quản trị viên -->
-            <section id="warnings-section" class="space-y-4 hidden">
-                <h2 class="text-xl font-bold text-rose-600 flex items-center gap-2">
-                    <span>⚠️</span> Khuyến Cáo Quan Trọng Từ Quản Trị Viên
-                </h2>
-                <div id="warnings-container" class="space-y-3"></div>
-            </section>
-
-            <!-- Khuyến nghị cộng đồng -->
-            <section id="recommendations-section" class="space-y-4">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                    <h2 class="text-xl font-bold text-indigo-600 flex items-center gap-2">
-                        <span>💡</span> Khuyến Nghị Cộng Đồng
-                    </h2>
-                    <button onclick="openRecommendationModal()" id="add-recommendation-btn" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition">+ Thêm Khuyến Nghị</button>
-                </div>
-                <div id="recommendations-container" class="space-y-3">
-                    <p class="text-slate-500 text-center py-4 text-sm">Chưa có khuyến nghị cộng đồng nào.</p>
-                </div>
-            </section>
-
-            <section>
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                    <h2 class="text-2xl font-bold text-slate-800 border-l-4 border-indigo-600 pl-3">Bài Viết Mới Nhất</h2>
-                    <div id="create-article-btn-container" class="hidden flex flex-wrap gap-2 items-center w-full md:w-auto">
-                        <button onclick="openArticleModal()" class="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">+ Đăng Tin Tức</button>
-                        <div id="admin-only-features" class="hidden flex flex-wrap gap-2 w-full md:w-auto">
-                            <button onclick="openModal('admin-broadcast-modal')" class="flex-1 md:flex-none bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition">+ Thông Báo Chung</button>
-                            <button onclick="openWarningModal()" class="flex-1 md:flex-none bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition">+ Đăng Khuyến Cáo</button>
-                            <button onclick="openLogoModal()" class="flex-1 md:flex-none bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-semibold transition">Đổi URL Logo</button>
-                        </div>
-                    </div>
-                </div>
-                <div id="articles-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <p class="text-slate-500 col-span-full text-center py-10">Đang tải danh sách bài viết...</p>
-                </div>
-            </section>
-        </div>
-
-        <!-- VIEW: Admin Management Dashboard -->
-        <div id="view-admin" class="hidden space-y-8">
-            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-800 mb-1">Bảng Quản Trị Hệ Thống (Quản trị viên)</h2>
-                        <p class="text-slate-500 text-sm">Quản lý duyệt tài khoản, khóa/mở quyền đổi tên, đổi mật khẩu, sửa email thành viên, xóa tài khoản, xem bài viết đã lên lịch và đăng thông báo chung.</p>
-                    </div>
-                    <div class="flex gap-2 flex-shrink-0">
-                        <button onclick="openOperatingHoursModal()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">⚙️ Sửa Giờ Hoạt Động</button>
-                        <button onclick="openModal('admin-broadcast-modal')" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">+ Thông Báo Chung</button>
-                    </div>
-                </div>
-                
-                <h3 class="text-lg font-bold text-slate-700 mb-4">Danh Sách Tài Khoản Hệ Thống</h3>
-                <div id="accounts-list-container" class="overflow-x-auto mb-8">
-                    <p class="text-slate-500">Đang tải danh sách tài khoản...</p>
-                </div>
-
-                <h3 class="text-lg font-bold text-slate-700 mb-4">Quản Lý Bài Viết & Lịch Đăng Bài Toàn Hệ Thống</h3>
-                <div id="admin-articles-list-container" class="overflow-x-auto">
-                    <p class="text-slate-500">Đang tải danh sách bài viết...</p>
-                </div>
+        <!-- Khối thông tin giới thiệu -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <h3 class="font-bold text-gray-900 mb-2">Thông tin tiếp nhận phản ánh</h3>
+                <p class="text-sm text-gray-600">Mọi ý kiến đóng góp của người dân xin vui lòng gửi trực tiếp về hộp thư điện tử chính thức: <a href="mailto:daithoatv@gmail.com" class="text-indigo-600 font-medium underline">daithoatv@gmail.com</a></p>
             </div>
-        </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <h3 class="font-bold text-gray-900 mb-2">Trạng thái dữ liệu đám mây</h3>
+                <p class="text-sm text-gray-600">Hệ thống kiểm soát tài khoản qua Admin, bài đăng hiển thị công khai ngay lập tức và hỗ trợ xóa bài trực tuyến.</p>
+            </div>
+        </section>
+
+        <!-- Khối Bài Viết Mới Nhất -->
+        <section>
+            <div class="flex justify-between items-center mb-6">
+                <div class="border-l-4 border-indigo-600 pl-3">
+                    <h2 class="text-xl font-bold text-gray-900">Bài Viết Mới Nhất</h2>
+                </div>
+                <div id="createPostBtnContainer" class="flex items-center space-x-2"></div>
+            </div>
+            
+            <div id="latestPostsContainer" class="text-center py-12 bg-white rounded-xl border border-dashed border-gray-200">
+                <p class="text-sm text-gray-500 italic">Đang tải dữ liệu từ đám mây...</p>
+            </div>
+        </section>
 
     </main>
 
-    <!-- MODAL: Edit Operating Hours -->
-    <div id="operating-hours-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl relative">
-            <button onclick="closeModal('operating-hours-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
-            <h3 class="text-2xl font-black mb-4 text-center text-indigo-600">Cập Nhật Khung Giờ Hoạt Động</h3>
-            <form onsubmit="handleSaveOperatingHours(event)" class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Giờ bắt đầu</label>
-                        <input type="time" id="op-start-time" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Giờ kết thúc</label>
-                        <input type="time" id="op-end-time" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Các ngày làm việc trong tuần</label>
-                    <input type="text" id="op-days" required placeholder="vd: Thứ Hai đến Thứ Sáu" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Trạng thái vận hành</label>
-                    <select id="op-status-select" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                        <option value="active">Đang hoạt động bình thường</option>
-                        <option value="paused">Tạm ngừng hoạt động</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Ghi chú / Lịch nghỉ (Tùy chọn)</label>
-                    <input type="text" id="op-note" placeholder="vd: Nghỉ lễ Quốc khánh, bảo trì hệ thống..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Lưu Thay Đổi</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL: Admin Broadcast Announcement -->
-    <div id="admin-broadcast-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl relative">
-            <button onclick="closeModal('admin-broadcast-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
-            <h3 class="text-2xl font-black mb-4 text-center text-purple-600">Đăng Thông Báo Chung Hệ Thống</h3>
-            <form onsubmit="handleSaveBroadcast(event)" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1">Nội dung thông báo chung</label>
-                    <textarea id="broadcast-content" rows="4" required placeholder="Nhập nội dung thông báo muốn phát tới tất cả thành viên..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"></textarea>
-                </div>
-                <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2.5 rounded-xl font-semibold transition">Phát Thông Báo</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL: Login -->
-    <div id="login-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative">
-            <button onclick="closeModal('login-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
-            <h3 class="text-2xl font-black mb-2 text-center">Đăng Nhập THoaTV</h3>
-            <form onsubmit="handleLogin(event)" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1">Tên tài khoản</label>
-                    <input type="text" id="login-username" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-                <div>
-                    <div class="flex justify-between items-center mb-1">
-                        <label class="text-sm font-medium">Mật khẩu</label>
-                        <button type="button" onclick="switchToForgotModal()" class="text-xs text-indigo-600 hover:underline">Quên mật khẩu?</button>
-                    </div>
-                    <input type="password" id="login-password" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-                <div class="flex justify-between items-center text-xs">
-                    <button type="button" onclick="switchToForgotUsernameModal()" class="text-indigo-600 hover:underline">Quên tên tài khoản?</button>
-                </div>
-                <div id="login-error" class="text-red-500 text-sm hidden"></div>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Đăng Nhập</button>
-            </form>
-            <div class="mt-4 text-center text-sm text-slate-500">Chưa có tài khoản? <button onclick="switchToRegisterModal()" class="text-indigo-600 font-semibold hover:underline">Đăng ký</button></div>
-        </div>
-    </div>
-
-    <!-- MODAL: Register -->
-    <div id="register-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative">
-            <button onclick="closeModal('register-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
-            <h3 class="text-2xl font-black mb-2 text-center">Tạo Tài Khoản Mới</h3>
-            <p class="text-xs text-slate-500 text-center mb-6">Tên: chỉ chữ cái, không khoảng trắng, không trùng.<br>Mật khẩu: có chữ thường, hoa, số và ký tự.</p>
-            <form onsubmit="handleRegister(event)" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1">Tên tài khoản</label>
-                    <input type="text" id="reg-username" required placeholder="vd: thoatvuser" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Email liên kết nhận mã OTP</label>
-                    <input type="email" id="reg-email" required placeholder="vd: daithoatv@gmail.com" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Mật khẩu</label>
-                    <input type="password" id="reg-password" required placeholder="vd: Qw1!Qw1!" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-                <div id="reg-error" class="text-red-500 text-sm hidden"></div>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Đăng Ký</button>
-            </form>
-            <div class="mt-4 text-center text-sm text-slate-500">Đã có tài khoản? <button onclick="switchToLoginModal()" class="text-indigo-600 font-semibold hover:underline">Đăng nhập</button></div>
-        </div>
-    </div>
-
-    <!-- MODAL: Forgot Password -->
-    <div id="forgot-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative">
-            <button onclick="closeModal('forgot-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
-            <h3 class="text-2xl font-black mb-2 text-center text-indigo-600">Khôi Phục Mật Khẩu</h3>
-            
-            <div id="forgot-step-1">
-                <p class="text-xs text-slate-500 text-center mb-4">Nhập tên tài khoản hoặc email đăng ký để nhận mã xác thực OTP.</p>
-                <form onsubmit="handleSendOTP(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Tên tài khoản hoặc Email</label>
-                        <input type="text" id="fp-identity" required placeholder="vd: daithoatv@gmail.com" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                    <div id="fp-error-1" class="text-red-500 text-sm hidden"></div>
-                    <button type="submit" id="fp-send-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Gửi Mã Xác Thực</button>
-                </form>
-            </div>
-
-            <div id="forgot-step-2" class="hidden">
-                <p class="text-xs text-indigo-600 text-center mb-4">Mã xác thực đã được gửi tới email của bạn. Vui lòng kiểm tra hộp thư.</p>
-                <form onsubmit="handleVerifyAndReset(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Nhập mã OTP (gồm 6 chữ số)</label>
-                        <input type="text" id="fp-otp-input" required placeholder="Nhập mã OTP..." class="w-full px-4 py-2 border rounded-lg tracking-widest text-center font-bold text-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Mật khẩu mới</label>
-                        <input type="password" id="fp-new-password" required placeholder="vd: Qw1!Qw1!" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                    <div id="fp-error-2" class="text-red-500 text-sm hidden"></div>
-                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl font-semibold transition">Xác Nhận Đổi Mật Khẩu</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: Forgot Username -->
-    <div id="forgot-username-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative">
-            <button onclick="closeModal('forgot-username-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
-            <h3 class="text-2xl font-black mb-4 text-center">Khôi Phục Tên Tài Khoản</h3>
-            <form onsubmit="handleForgotUsername(event)" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1">Nhập mật khẩu của bạn</label>
-                    <input type="password" id="fu-password" required placeholder="Nhập mật khẩu..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Tìm kiếm và chọn tài khoản cũ</label>
-                    <input type="text" id="fu-search" oninput="filterAccountsForRecovery()" placeholder="Gõ tên để tìm..." class="w-full px-3 py-1.5 border rounded-lg mb-2 text-sm focus:outline-none">
-                    <div id="fu-accounts-list" class="max-h-36 overflow-y-auto border rounded-lg p-2 space-y-1 bg-slate-50">
-                        <p class="text-xs text-slate-400 text-center py-2">Nhập mật khẩu và tìm tài khoản...</p>
-                    </div>
-                    <input type="hidden" id="fu-selected-username" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Tên tài khoản mới</label>
-                    <input type="text" id="fu-new-username" required placeholder="vd: newusername" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-                <div id="fu-error" class="text-red-500 text-sm hidden"></div>
-                <div class="flex space-x-2">
-                    <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Đổi Tên</button>
-                    <button type="button" onclick="closeModal('forgot-username-modal'); switchToLoginModal();" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 py-2.5 rounded-xl font-semibold transition">Đóng</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL: Admin Change Member Password -->
-    <div id="admin-change-pass-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative">
-            <button onclick="closeModal('admin-change-pass-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
-            <h3 class="text-2xl font-black mb-2 text-center">Đổi Mật Khẩu Thành Viên</h3>
-            <p id="target-user-label" class="text-xs text-indigo-600 font-semibold text-center mb-4"></p>
-            <form onsubmit="handleAdminChangePassword(event)" class="space-y-4">
-                <input type="hidden" id="admin-target-username">
-                <div>
-                    <label class="block text-sm font-medium mb-1">Mật khẩu mới</label>
-                    <input type="password" id="admin-new-password" required placeholder="vd: Qw1!Qw1!" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Xác Nhận Đổi Mật Khẩu</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL: Admin Edit Member Email -->
-    <div id="admin-edit-email-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative">
-            <button onclick="closeModal('admin-edit-email-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
-            <h3 class="text-2xl font-black mb-2 text-center">Sửa Email Thành Viên</h3>
-            <p id="target-email-user-label" class="text-xs text-indigo-600 font-semibold text-center mb-4"></p>
-            <form onsubmit="handleAdminSaveEmail(event)" class="space-y-4">
-                <input type="hidden" id="admin-email-target-username">
-                <div>
-                    <label class="block text-sm font-medium mb-1">Email mới</label>
-                    <input type="email" id="admin-new-email" required placeholder="vd: daithoatv@gmail.com" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Lưu Email Mới</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL: Create/Edit Article -->
-    <div id="article-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <button onclick="closeModal('article-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
-            <h3 id="article-modal-title" class="text-2xl font-black mb-4 text-center">Đăng Bài Viết</h3>
-            <form onsubmit="handleSaveArticle(event)" class="space-y-4">
-                <input type="hidden" id="art-edit-index" value="">
-                <div>
-                    <label class="block text-sm font-medium mb-1">Tiêu đề bài viết <span class="text-rose-500">*</span></label>
-                    <input type="text" id="art-title" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Nội dung chi tiết / Mô tả ngắn <span class="text-rose-500">*</span></label>
-                    <textarea id="art-desc" rows="3" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">URL Hình ảnh (Tùy chọn)</label>
-                    <input type="url" id="art-img" placeholder="https://..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Nguồn tham khảo (Khuyến khích)</label>
-                    <input type="text" id="art-source" placeholder="vd: Báo Tuổi Trẻ, chính quy..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
+    <!-- MODAL XEM QUY CHẾ ĐẦY ĐỦ -->
+    <div id="rulesModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-xl relative max-h-[85vh] flex flex-col">
+            <button onclick="closeRulesModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                <i class="fa-solid fa-book-open text-indigo-600 mr-2"></i> Quy Định Sử Dụng và Đăng Tải Nội Dung THoaTV
+            </h3>
+            <div class="overflow-y-auto space-y-4 text-sm text-gray-700 pr-2 flex-grow border-t border-b border-gray-100 py-3">
                 
-                <!-- Lên lịch đăng bài -->
-                <div class="space-y-2 pt-2 border-t border-slate-100">
-                    <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" id="art-schedule-check" onchange="toggleScheduleInput()" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
-                        <span class="text-sm font-semibold text-slate-700">Lên lịch đăng bài (Scheduled Publishing)</span>
-                    </label>
-                    <div id="art-schedule-container" class="hidden space-y-1">
-                        <label class="block text-xs text-slate-500">Chọn ngày và giờ đăng cụ thể:</label>
-                        <input type="datetime-local" id="art-schedule-time" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                </div>
-
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Lưu Bài Viết</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL: Create/Edit Warning -->
-    <div id="warning-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl relative">
-            <button onclick="closeModal('warning-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
-            <h3 id="warning-modal-title" class="text-2xl font-black mb-4 text-center text-rose-600">Đăng Khuyến Cáo</h3>
-            <form onsubmit="handleSaveWarning(event)" class="space-y-4">
-                <input type="hidden" id="warn-edit-index" value="">
                 <div>
-                    <label class="block text-sm font-medium mb-1">Nội dung khuyến cáo</label>
-                    <textarea id="warn-content" rows="4" required placeholder="Nhập nội dung khuyến cáo..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-rose-500 focus:outline-none"></textarea>
+                    <h4 class="font-bold text-indigo-700">Điều 1. Nguyên tắc chung & Phạm vi thông tin</h4>
+                    <p class="mt-1">1. THoaTV là nền tảng mô phỏng mạng xã hội, nơi người dùng có thể chia sẻ bài viết và trao đổi thông tin thuộc phạm vi Việt Nam, quốc gia/vũng lãnh thổ trên thế giới, sự kiện thời sự, vấn đề xã hội, chính sách, quản lý nhà nước, văn hóa, giáo dục, khoa học công nghệ và đời sống.</p>
+                    <p>2. Người dùng phải tuân thủ quy định sử dụng THoaTV và pháp luật Việt Nam.</p>
+                    <p>3. Mỗi người dùng chịu trách nhiệm hoàn toàn về nội dung do mình đăng tải.</p>
+                    <p>4. Không được lợi dụng THoaTV để đăng tải thông tin sai sự thật, gây hiểu nhầm, xúc phạm hoặc xâm phạm quyền và lợi ích hợp pháp của tổ chức, cá nhân khác.</p>
                 </div>
-                <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-xl font-semibold transition">Lưu Khuyến Cáo</button>
-            </form>
-        </div>
-    </div>
 
-    <!-- MODAL: Create/Edit Recommendation -->
-    <div id="recommendation-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl relative">
-            <button onclick="closeModal('recommendation-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
-            <h3 id="recommendation-modal-title" class="text-2xl font-black mb-4 text-center text-indigo-600">Đăng Khuyến Nghị Cộng Đồng</h3>
-            <form onsubmit="handleSaveRecommendation(event)" class="space-y-4">
-                <input type="hidden" id="rec-edit-index" value="">
                 <div>
-                    <label class="block text-sm font-medium mb-1">Nội dung khuyến nghị</label>
-                    <textarea id="rec-content" rows="4" required placeholder="Nhập nội dung khuyến nghị của bạn..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                    <h4 class="font-bold text-indigo-700">Điều 2. Phân quyền tài khoản</h4>
+                    <p class="mt-1"><strong>1. Admin – Quản trị viên:</strong> Quản lý toàn bộ hệ thống; quản lý tài khoản Member; phê duyệt tài khoản đăng ký mới; xem, quản lý và xử lý bài viết; gỡ hoặc xóa bài viết sai sự thật/vi phạm; gửi cảnh báo; tiếp nhận báo cáo/khiếu nại; lưu lại lịch sử xử lý nội dung; khóa tài khoản vi phạm và phối hợp với cơ quan có thẩm quyền khi có yêu cầu hợp pháp.</p>
+                    <p><strong>2. Member – Thành viên:</strong> Đăng ký tài khoản và chờ Admin phê duyệt để đăng nhập. Được đăng bài công khai trực tiếp ngay sau khi gửi, được chỉnh sửa hoặc xóa bài viết của chính mình; phải chịu trách nhiệm về nội dung đã đăng và hợp tác khi Admin cần xác minh nội dung.</p>
+                    <p><strong>3. Guest – Khách:</strong> Được xem các bài viết công khai, không có quyền đăng bài hay quản trị hệ thống.</p>
                 </div>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Lưu Khuyến Nghị</button>
-            </form>
-        </div>
-    </div>
 
-    <!-- MODAL: Logo URL Setting -->
-    <div id="logo-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50 px-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative">
-            <button onclick="closeModal('logo-modal')" class="absolute top-4 right-4 text-slate-400 font-bold text-xl">&times;</button>
-            <h3 class="text-2xl font-black mb-4 text-center">Cập Nhật Logo Website</h3>
-            <form onsubmit="handleSaveLogo(event)" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium mb-1">URL Logo (HTTPS)</label>
-                    <input type="url" id="logo-url-input" placeholder="https://..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    <h4 class="font-bold text-indigo-700">Điều 3. Quy định đăng bài & Nguyên tắc thông tin</h4>
+                    <p class="mt-1">1. Member phải tuân thủ nguyên tắc: Thông tin trung thực, không cố ý gây hiểu lầm; không tự ý biến suy đoán thành sự thật; khuyến khích dẫn nguồn tham khảo; phân biệt rõ thông tin được xác nhận và ý kiến cá nhân; không giả mạo cơ quan nhà nước, tổ chức hoặc cá nhân.</p>
+                    <p>2. Tiêu đề và nội dung là bắt buộc; hình ảnh, video và nguồn tham khảo là tùy chọn nhưng được khuyến khích.</p>
                 </div>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-semibold transition">Lưu Logo</button>
-            </form>
+
+                <div>
+                    <h4 class="font-bold text-indigo-700">Điều 4. Nội dung và Hình thức bị cấm</h4>
+                    <p class="mt-1">1. <strong>Nội dung cấm:</strong> Thông tin bịa đặt, xuyên tạc; xâm phạm quyền/lợi ích hợp pháp của người khác; kích động bạo lực, thù hận; lộ thông tin riêng tư trái phép; vi phạm bản quyền, lừa đảo.</p>
+                    <p>2. <strong>Hình thức cấm:</strong> Member tuyệt đối không lợi dụng THoaTV để sản xuất và đăng tải nội dung dưới hình thức: <em>Phóng sự báo chí, Điều tra báo chí, Phỏng vấn báo chí</em> (Giới hạn tại Điều 28 Nghị định 147/2024/NĐ-CP).</p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-indigo-700">Điều 5. Xử lý vi phạm và Báo cáo nội dung</h4>
+                    <p class="mt-1">1. Admin có quyền gỡ bài viết sai sự thật, gây hiểu nhầm hoặc vi phạm và gửi cảnh báo kèm lý do đến Member.</p>
+                    <p>2. Member có quyền giải trình hoặc cung cấp nguồn tham khảo đối chứng.</p>
+                    <p>3. Người dùng có thể báo cáo bài viết có dấu hiệu vi phạm để Admin kiểm tra và xử lý.</p>
+                </div>
+
+            </div>
+            <div class="mt-4 text-right">
+                <button onclick="closeRulesModal()" class="bg-indigo-600 text-white px-5 py-2 rounded-lg text-xs font-semibold hover:bg-indigo-700">Đã Hiểu</button>
+            </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 py-6 text-center text-slate-500 text-sm">
-        <p>&copy; 2026 THoaTV. Bảo lưu mọi quyền.</p>
+    <!-- MODAL ĐĂNG NHẬP / ĐĂNG KÝ (EMAIL OTP VỚI QUY CHẾ) -->
+    <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl relative animate-fade-in max-h-[90vh] flex flex-col">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="text-center mb-4">
+                <h3 class="text-xl font-bold text-gray-900">Xác thực tài khoản THoaTV</h3>
+                <p class="text-xs text-gray-500 mt-1">Đăng nhập hoặc đăng ký nhanh chóng bằng Email OTP</p>
+            </div>
+
+            <!-- Bước 1: Nhập Email & Đọc Quy Chế -->
+            <div id="stepEmail" class="space-y-4 flex-grow flex flex-col overflow-hidden">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Địa chỉ Email của bạn</label>
+                    <input type="email" id="userEmailInput" placeholder="nhapemail@example.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <!-- Khung Tóm tắt Quy chế chính thức -->
+                <div class="flex-grow border border-gray-200 bg-gray-50 rounded-lg p-3 text-xs overflow-y-auto max-h-48 space-y-2 text-gray-700">
+                    <p class="font-bold text-indigo-700 text-center mb-1">QUY ĐỊNH SỬ DỤNG VÀ ĐĂNG TẢI NỘI DUNG</p>
+                    <p><strong>• Nguyên tắc:</strong> Người dùng tự chịu trách nhiệm về nội dung bài viết. Không đăng thông tin bịa đặt, sai sự thật.</p>
+                    <p><strong>• Phân quyền:</strong> Member đăng ký phải chờ Admin duyệt tài khoản mới có thể đăng nhập. Bài viết đăng lên được hiển thị công khai ngay.</p>
+                    <p><strong>• Nội dung bị cấm:</strong> Cấm lợi dụng THoaTV đăng tải <em>Phóng sự báo chí, Điều tra báo chí, Phỏng vấn báo chí</em> (Điều 28 Nghị định 147/2024/NĐ-CP).</p>
+                    <p><strong>• Xử lý vi phạm:</strong> Admin có quyền gỡ bài viết vi phạm, gửi cảnh báo đến Member theo Điều 5 Quy chế.</p>
+                </div>
+
+                <!-- Đồng ý điều khoản -->
+                <div class="flex items-center space-x-2">
+                    <input type="checkbox" id="agreeTerms" class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
+                    <label for="agreeTerms" class="text-xs text-gray-700 font-medium">Tôi đã đọc và đồng ý với Quy chế hoạt động THoaTV</label>
+                </div>
+
+                <button onclick="sendOtpCode()" class="w-full bg-indigo-600 text-white font-medium py-2.5 rounded-lg hover:bg-indigo-700 transition text-sm">
+                    Gửi Mã OTP qua Email
+                </button>
+            </div>
+
+            <!-- Bước 2: Nhập Mã OTP -->
+            <div id="stepOtp" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Mã OTP đã gửi tới email</label>
+                    <input type="text" id="otpInput" placeholder="Nhập 6 chữ số OTP" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm text-center tracking-widest font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <button onclick="verifyOtpCode()" class="w-full bg-green-600 text-white font-medium py-2.5 rounded-lg hover:bg-green-700 transition text-sm">
+                    Xác Thực & Đăng Nhập
+                </button>
+                <div class="text-center">
+                    <button onclick="backToEmailStep()" class="text-xs text-indigo-600 hover:underline">Quay lại đổi email</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ĐĂNG BÀI VIẾT MỚI -->
+    <div id="postModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl relative">
+            <button onclick="closePostModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-lg font-bold text-gray-900 mb-4"><i class="fa-solid fa-pen-to-square text-indigo-600 mr-2"></i> Đăng Bài Viết Mới</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Tiêu đề bài viết</label>
+                    <input type="text" id="postTitle" placeholder="Nhập tiêu đề..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Nội dung chi tiết</label>
+                    <textarea id="postContent" rows="4" placeholder="Nhập nội dung bài viết cộng đồng..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+                <button onclick="submitNewPost()" class="w-full bg-indigo-600 text-white font-medium py-2.5 rounded-lg hover:bg-indigo-700 transition text-sm">
+                    Đăng Bài Lên Hệ Thống
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ĐĂNG THÔNG BÁO HỆ THỐNG (ADMIN) -->
+    <div id="notifModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl relative">
+            <button onclick="closeNotifModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-lg font-bold text-gray-900 mb-4"><i class="fa-solid fa-bullhorn text-indigo-600 mr-2"></i> Đăng Thông Báo Mới</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Tiêu đề thông báo</label>
+                    <input type="text" id="notifTitleInput" placeholder="Ví dụ: [Thông báo từ Admin]..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Nội dung thông báo</label>
+                    <textarea id="notifDescInput" rows="3" placeholder="Nhập chi tiết nội dung thông báo..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+                <button onclick="submitNewNotification()" class="w-full bg-indigo-600 text-white font-medium py-2.5 rounded-lg hover:bg-indigo-700 transition text-sm">
+                    Phát Hành Thông Báo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL QUẢN TRỊ - DUYỆT TÀI KHOẢN -->
+    <div id="adminModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-xl relative max-h-[85vh] flex flex-col">
+            <button onclick="closeAdminModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-lg font-bold text-gray-900 mb-4"><i class="fa-solid fa-shield-halved text-red-600 mr-2"></i> Trang Quản Trị - Duyệt Tài Khoản Đăng Ký</h3>
+            <div id="pendingUsersList" class="overflow-y-auto space-y-3 flex-grow pr-1"></div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-gray-200 py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500">
+            © 2026 THoaTV. Bảo lưu mọi quyền.
+        </div>
     </footer>
 
-    <!-- Script Logic -->
+    <!-- SCRIPT XỬ LÝ DỮ LIỆU ĐÁM MÂY & TÍNH NĂNG -->
     <script>
-        const BIN_ID = '6aee9fe5ac6210605a744ebe';
-        const MASTER_KEY = '$2a$10$kTgIqEUufeGM34wotK2GF.LwVKq0otFvRAlNhxhF7O/JgmoN7axca';
+        const JSONBIN_BIN_ID = "6aee9fe5ac6210605a744ebe";
+        const JSONBIN_MASTER_KEY = "$2a$10$kTgIqEUufeGM34wotK2GF.LwVKq0otFvRAlNhxhF7O/JgmoN7axca";
 
-        function switchView(viewName) {
-            document.getElementById('view-home').classList.add('hidden');
-            document.getElementById('view-admin').classList.add('hidden');
-            document.getElementById('view-' + viewName).classList.remove('hidden');
-            if (viewName === 'home') { loadOperatingHours(); loadWarnings(); loadRecommendations(); checkAndPublishScheduledArticles(); }
-            if (viewName === 'admin') { loadOperatingHours(); loadAccountsList(); loadAdminArticlesList(); }
-        }
+        let cloudData = {
+            posts: [],
+            users: [],
+            notifications: [],
+            admin: ""
+        };
 
-        function openModal(id) { 
-            const el = document.getElementById(id);
-            if (el) {
-                el.classList.remove('hidden'); 
-                el.classList.add('flex'); 
-            }
-        }
-
-        function closeModal(id) { 
-            const el = document.getElementById(id);
-            if (el) {
-                el.classList.remove('flex'); 
-                el.classList.add('hidden'); 
-            }
-        }
-
-        function switchToRegisterModal() { closeModal('login-modal'); openModal('register-modal'); }
-        function switchToLoginModal() { closeModal('register-modal'); closeModal('forgot-modal'); closeModal('forgot-username-modal'); openModal('login-modal'); }
-        function switchToForgotModal() { 
-            closeModal('login-modal'); 
-            document.getElementById('forgot-step-1').classList.remove('hidden');
-            document.getElementById('forgot-step-2').classList.add('hidden');
-            document.getElementById('fp-identity').value = '';
-            document.getElementById('fp-error-1').classList.add('hidden');
-            openModal('forgot-modal'); 
-        }
-        function switchToForgotUsernameModal() { closeModal('login-modal'); openModal('forgot-username-modal'); loadRecoveryAccountsList(); }
-
-        async function fetchBinData() {
-            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-                headers: { 'X-Master-Key': MASTER_KEY }
-            });
-            const json = await res.json();
-            let data = json.record;
-            if (!data.users || data.users.length === 0) {
-                data.users = [{
-                    username: 'tranleebaoduy',
-                    email: 'daithoatv@gmail.com',
-                    password: 'THoaTV1!',
-                    role: 'admin',
-                    status: 'approved',
-                    canRename: true
-                }];
-                data.articles = data.articles || [];
-                data.warnings = data.warnings || [];
-                data.recommendations = data.recommendations || [];
-                data.notifications = data.notifications || [];
-                data.operatingHours = {
-                    startTime: '08:00',
-                    endTime: '17:00',
-                    days: 'Thứ Hai đến Thứ Sáu',
-                    status: 'active',
-                    note: 'Giờ làm việc hành chính chính thức tại số 02 Lê Hồng Phong, TP. Huế.'
-                };
-                await updateBinData(data);
-            }
-            return data;
-        }
-
-        async function updateBinData(data) {
-            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
-                body: JSON.stringify(data)
-            });
-            return await res.json();
-        }
-
-        // --- QUẢN LÝ KHUNG GIỜ HOẠT ĐỘNG (OPERATING HOURS) ---
-        async function loadOperatingHours() {
-            const descEl = document.getElementById('op-hours-desc');
-            const noteEl = document.getElementById('op-note-desc');
-            const badgeEl = document.getElementById('op-status-badge');
-            
+        async function fetchDataFromCloud() {
             try {
-                const data = await fetchBinData();
-                const oh = data.operatingHours || {
-                    startTime: '08:00',
-                    endTime: '17:00',
-                    days: 'Thứ Hai đến Thứ Sáu',
-                    status: 'active',
-                    note: ''
-                };
-
-                descEl.textContent = `Thời gian làm việc: ${oh.startTime} - ${oh.endTime} (${oh.days})`;
-                noteEl.textContent = oh.note ? `Ghi chú: ${oh.note}` : '';
-
-                const now = new Date();
-                const currentMinutes = now.getHours() * 60 + now.getMinutes();
-                const [startH, startM] = oh.startTime.split(':').map(Number);
-                const [endH, endM] = oh.endTime.split(':').map(Number);
-                const startMinutes = startH * 60 + startM;
-                const endMinutes = endH * 60 + endM;
-
-                if (oh.status === 'paused') {
-                    badgeEl.className = 'px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700';
-                    badgeEl.textContent = '🔴 Tạm ngừng hoạt động';
-                } else if (currentMinutes >= startMinutes && currentMinutes <= endMinutes) {
-                    badgeEl.className = 'px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700';
-                    badgeEl.textContent = '🟢 Đang hoạt động';
-                } else {
-                    badgeEl.className = 'px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700';
-                    badgeEl.textContent = '🌙 Ngoài giờ hoạt động';
-                }
-            } catch (e) {
-                descEl.textContent = 'Không thể tải thông tin giờ hoạt động.';
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+                    headers: { 'X-Master-Key': JSONBIN_MASTER_KEY }
+                });
+                const data = await response.json();
+                cloudData.posts = data.record.posts || [];
+                cloudData.users = data.record.users || [];
+                cloudData.notifications = data.record.notifications || [
+                    { id: 1, title: "[Thông báo chung từ Admin]", desc: "Khung giờ hoạt động của THoaTV là từ 07:00 đến 17:00, Thứ Hai đến Thứ Sáu.", time: "10 phút trước", isRead: false },
+                    { id: 2, title: "[Thông báo từ Admin]", desc: "Căn cứ các quy định Nghị định 320/2026/NĐ-CP và Nghị định 69/2024/NĐ-CP về định danh điện tử, THoaTV quyết định không thực hiện tích hợp liên kết trực tiếp với VNeID.", time: "1 giờ trước", isRead: false }
+                ];
+                cloudData.admin = data.record.admin || "";
+                renderPosts();
+                renderNotifications();
+            } catch (error) {
+                console.error("Lỗi tải dữ liệu:", error);
+                document.getElementById('latestPostsContainer').innerHTML = '<p class="text-sm text-red-500 italic">Không thể tải dữ liệu từ đám mây.</p>';
             }
         }
 
-        function openOperatingHoursModal() {
-            fetchBinData().then(data => {
-                const oh = data.operatingHours || { startTime: '08:00', endTime: '17:00', days: 'Thứ Hai đến Thứ Sáu', status: 'active', note: '' };
-                document.getElementById('op-start-time').value = oh.startTime;
-                document.getElementById('op-end-time').value = oh.endTime;
-                document.getElementById('op-days').value = oh.days;
-                document.getElementById('op-status-select').value = oh.status;
-                document.getElementById('op-note').value = oh.note || '';
-                openModal('operating-hours-modal');
-            }).catch(() => {
-                openModal('operating-hours-modal');
-            });
+        async function saveDataToCloud() {
+            try {
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_MASTER_KEY
+                    },
+                    body: JSON.stringify(cloudData)
+                });
+                if (response.ok) {
+                    renderPosts();
+                    renderNotifications();
+                }
+            } catch (error) {
+                console.error("Lỗi lưu dữ liệu:", error);
+                alert("Lưu dữ liệu lên đám mây thất bại!");
+            }
         }
 
-        async function handleSaveOperatingHours(e) {
-            e.preventDefault();
-            const raw = localStorage.getItem('current_user');
-            if (!raw) return;
-            const user = JSON.parse(raw);
-            if (user.role !== 'admin') {
-                alert('Chỉ Quản trị viên mới có quyền cập nhật khung giờ hoạt động!');
+        function renderPosts() {
+            const postsContainer = document.getElementById('latestPostsContainer');
+            const currentUser = localStorage.getItem('thoatv_user');
+
+            if (cloudData.posts.length === 0) {
+                postsContainer.className = "text-center py-12 bg-white rounded-xl border border-dashed border-gray-200";
+                postsContainer.innerHTML = '<p class="text-sm text-gray-500 italic">Hiện chưa có bài viết nào trên hệ thống.</p>';
                 return;
             }
 
-            const startTime = document.getElementById('op-start-time').value;
-            const endTime = document.getElementById('op-end-time').value;
-            const days = document.getElementById('op-days').value.trim();
-            const status = document.getElementById('op-status-select').value;
-            const note = document.getElementById('op-note').value.trim();
+            postsContainer.className = "grid grid-cols-1 md:grid-cols-2 gap-4 text-left";
+            postsContainer.innerHTML = '';
 
-            try {
-                const data = await fetchBinData();
-                data.operatingHours = { startTime, endTime, days, status, note };
-                await updateBinData(data);
+            cloudData.posts.forEach(post => {
+                const canDelete = currentUser && (currentUser === post.author || currentUser === cloudData.admin);
 
-                alert('Cập nhật khung giờ hoạt động thành công!');
-                closeModal('operating-hours-modal');
-                loadOperatingHours();
-                await addNotification('all_user', `🕒 [Thông báo]: Khung giờ hoạt động của THoaTV đã được cập nhật (${startTime} - ${endTime}, ${days}).`, 'info');
-            } catch (err) {
-                alert('Lỗi: ' + err.message);
-            }
-        }
-
-        // --- HỆ THỐNG THÔNG BÁO (NOTIFICATION SYSTEM) ---
-        async function addNotification(targetUser, message, type = 'info') {
-            try {
-                const data = await fetchBinData();
-                data.notifications = data.notifications || [];
-                data.notifications.unshift({
-                    id: 'notif_' + Date.now() + Math.random().toString(36).substring(2, 5),
-                    targetUser: targetUser, 
-                    message: message,
-                    type: type,
-                    read: false,
-                    date: new Date().toLocaleString('vi-VN')
-                });
-                await updateBinData(data);
-            } catch (e) {}
-        }
-
-        async function handleSaveBroadcast(e) {
-            e.preventDefault();
-            const raw = localStorage.getItem('current_user');
-            if (!raw) return;
-            const user = JSON.parse(raw);
-            if (user.role !== 'admin') {
-                alert('Chỉ Quản trị viên mới có quyền đăng thông báo chung!');
-                return;
-            }
-
-            const content = document.getElementById('broadcast-content').value.trim();
-            if (!content) return;
-
-            try {
-                await addNotification('all_user', `📢 [Thông báo chung từ Admin]: ${content}`, 'broadcast');
-                alert('Phát thông báo chung thành công tới tất cả người dùng hệ thống!');
-                closeModal('admin-broadcast-modal');
-                document.getElementById('broadcast-content').value = '';
-                loadNotifications();
-            } catch (err) {
-                alert('Lỗi: ' + err.message);
-            }
-        }
-
-        function toggleNotificationDropdown() {
-            const dropdown = document.getElementById('notification-dropdown');
-            dropdown.classList.toggle('hidden');
-            if (!dropdown.classList.contains('hidden')) {
-                loadNotifications();
-            }
-        }
-
-        async function loadNotifications() {
-            const container = document.getElementById('notification-list');
-            const badge = document.getElementById('notification-badge');
-            const rawUser = localStorage.getItem('current_user');
-            const currentUser = rawUser ? JSON.parse(rawUser) : null;
-
-            try {
-                const data = await fetchBinData();
-                const notifications = data.notifications || [];
-
-                const userNotifs = notifications.filter(n => {
-                    if (n.targetUser === 'all_user') return true;
-                    if (!currentUser) return false;
-                    return n.targetUser === currentUser.username || 
-                           (currentUser.role === 'admin' && n.targetUser === 'all_admin');
-                });
-
-                const unreadCount = userNotifs.filter(n => !n.read).length;
-
-                if (unreadCount > 0) {
-                    badge.textContent = unreadCount;
-                    badge.classList.remove('hidden');
-                } else {
-                    badge.classList.add('hidden');
-                }
-
-                if (userNotifs.length === 0) {
-                    container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Không có thông báo nào.</p>`;
-                    return;
-                }
-
-                container.innerHTML = userNotifs.map(n => `
-                    <div class="p-3 hover:bg-slate-50 transition flex items-start space-x-2 ${n.read ? 'opacity-70' : 'bg-indigo-50/40'}" onclick="markNotificationAsRead('${n.id}')">
-                        <div class="flex-grow">
-                            <p class="text-xs text-slate-800 font-medium">${n.message}</p>
-                            <span class="text-[10px] text-slate-400 mt-1 block">${n.date}</span>
-                        </div>
-                        ${!n.read ? '<span class="w-2 h-2 bg-indigo-600 rounded-full flex-shrink-0 mt-1"></span>' : ''}
-                    </div>
-                `).join('');
-            } catch (e) {
-                container.innerHTML = `<p class="text-xs text-red-500 text-center py-4">Lỗi tải thông báo.</p>`;
-            }
-        }
-
-        async function markNotificationAsRead(notifId) {
-            try {
-                const data = await fetchBinData();
-                data.notifications = (data.notifications || []).map(n => n.id === notifId ? { ...n, read: true } : n);
-                await updateBinData(data);
-                loadNotifications();
-            } catch (e) {}
-        }
-
-        async function markAllNotificationsAsRead() {
-            const rawUser = localStorage.getItem('current_user');
-            const currentUser = rawUser ? JSON.parse(rawUser) : null;
-
-            try {
-                const data = await fetchBinData();
-                data.notifications = (data.notifications || []).map(n => {
-                    if (n.targetUser === 'all_user' || (currentUser && (n.targetUser === currentUser.username || (currentUser.role === 'admin' && n.targetUser === 'all_admin')))) {
-                        return { ...n, read: true };
-                    }
-                    return n;
-                });
-                await updateBinData(data);
-                loadNotifications();
-            } catch (e) {}
-        }
-
-        async function applyLogo() {
-            try {
-                const data = await fetchBinData();
-                const logoImg = document.getElementById('nav-logo-img');
-                if (data.logoUrl) {
-                    logoImg.src = data.logoUrl;
-                    logoImg.classList.remove('hidden');
-                } else {
-                    logoImg.classList.add('hidden');
-                }
-            } catch (e) {}
-        }
-
-        function openLogoModal() { openModal('logo-modal'); }
-
-        async function handleSaveLogo(e) {
-            e.preventDefault();
-            const logoUrl = document.getElementById('logo-url-input').value.trim();
-            try {
-                const data = await fetchBinData();
-                data.logoUrl = logoUrl;
-                await updateBinData(data);
-                alert('Cập nhật Logo thành công!');
-                closeModal('logo-modal');
-                applyLogo();
-            } catch (err) {
-                alert('Lỗi: ' + err.message);
-            }
-        }
-
-        let targetUserForReset = null;
-
-        async function handleSendOTP(e) {
-            e.preventDefault();
-            const identity = document.getElementById('fp-identity').value.trim();
-            const errDiv = document.getElementById('fp-error-1');
-            const sendBtn = document.getElementById('fp-send-btn');
-            errDiv.classList.add('hidden');
-
-            try {
-                sendBtn.textContent = 'Đang gửi mã...';
-                sendBtn.disabled = true;
-
-                const data = await fetchBinData();
-                const users = data.users || [];
-                
-                const user = users.find(u => u.username === identity || u.email === identity);
-                if (!user) {
-                    throw new Error('Không tìm thấy tài khoản hoặc email này trong hệ thống.');
-                }
-
-                if (!user.email) {
-                    throw new Error('Tài khoản này chưa được liên kết email. Vui lòng liên hệ Admin.');
-                }
-
-                const otp = Math.floor(100000 + Math.random() * 900000).toString();
-                user.otpCode = otp;
-                user.otpExpiry = Date.now() + 5 * 60 * 1000;
-                
-                await updateBinData(data);
-                targetUserForReset = user.username;
-
-                const templateParams = {
-                    to_name: user.username,
-                    to_email: user.email,
-                    otp_code: otp
-                };
-
-                await emailjs.send('service_6p50yqk', 'template_ldblnii', templateParams);
-
-                alert(`Mã xác thực OTP đã được gửi đến email: ${user.email}`);
-                document.getElementById('forgot-step-1').classList.add('hidden');
-                document.getElementById('forgot-step-2').classList.remove('hidden');
-
-            } catch (err) {
-                errDiv.textContent = err.message;
-                errDiv.classList.remove('hidden');
-            } finally {
-                sendBtn.textContent = 'Gửi Mã Xác Thực';
-                sendBtn.disabled = false;
-            }
-        }
-
-        async function handleVerifyAndReset(e) {
-            e.preventDefault();
-            const inputOtp = document.getElementById('fp-otp-input').value.trim();
-            const newPassword = document.getElementById('fp-new-password').value;
-            const errDiv = document.getElementById('fp-error-2');
-            errDiv.classList.add('hidden');
-
-            const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/;
-            if (!passRegex.test(newPassword)) {
-                errDiv.textContent = 'Mật khẩu phải chứa ít nhất chữ thường, hoa, số và ký tự đặc biệt.';
-                errDiv.classList.remove('hidden');
-                return;
-            }
-
-            try {
-                const data = await fetchBinData();
-                const user = data.users.find(u => u.username === targetUserForReset);
-
-                if (!user || user.otpCode !== inputOtp) {
-                    throw new Error('Mã OTP không chính xác.');
-                }
-
-                if (Date.now() > user.otpExpiry) {
-                    throw new Error('Mã OTP đã hết hạn. Vui lòng thử lại từ đầu.');
-                }
-
-                user.password = newPassword;
-                delete user.otpCode;
-                delete user.otpExpiry;
-
-                await updateBinData(data);
-                alert('Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại.');
-                closeModal('forgot-modal');
-                switchToLoginModal();
-
-            } catch (err) {
-                errDiv.textContent = err.message;
-                errDiv.classList.remove('hidden');
-            }
-        }
-
-        async function loadWarnings() {
-            const section = document.getElementById('warnings-section');
-            const container = document.getElementById('warnings-container');
-            try {
-                const data = await fetchBinData();
-                const warnings = data.warnings || [];
-                const rawUser = localStorage.getItem('current_user');
-                const currentUser = rawUser ? JSON.parse(rawUser) : null;
-                const isAdmin = currentUser && currentUser.role === 'admin';
-
-                if (warnings.length === 0) {
-                    section.classList.add('hidden');
-                    return;
-                }
-
-                section.classList.remove('hidden');
-                container.innerHTML = warnings.map((w, index) => `
-                    <div class="bg-rose-50 border-l-4 border-rose-600 p-4 rounded-xl shadow-sm flex justify-between items-start">
+                const postCard = `
+                    <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
                         <div>
-                            <p class="text-rose-900 font-medium whitespace-pre-line">${w.content}</p>
-                            <span class="text-xs text-rose-500 mt-2 block">Đăng bởi: @${w.author} - ${w.date}</span>
-                        </div>
-                        ${isAdmin ? `
-                            <div class="flex space-x-1 ml-4">
-                                <button onclick="openEditWarning(${index})" class="bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded text-xs">Sửa</button>
-                                <button onclick="deleteWarning(${index})" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs">Xóa</button>
+                            <div class="flex justify-between items-start mb-1">
+                                <h4 class="font-bold text-gray-900 text-base">${post.title}</h4>
+                                ${canDelete ? `
+                                    <button onclick="deletePost(${post.id})" class="text-gray-400 hover:text-red-600 transition p-1" title="Xóa bài viết">
+                                        <i class="fa-solid fa-trash-can text-sm"></i>
+                                    </button>
+                                ` : ''}
                             </div>
-                        ` : ''}
+                            <p class="text-xs text-gray-400 mb-3"><i class="fa-regular fa-clock mr-1"></i> ${post.time} • <span class="text-indigo-600 font-medium">${post.author}</span></p>
+                            <p class="text-sm text-gray-700 line-clamp-3 mb-4">${post.content}</p>
+                        </div>
                     </div>
-                `).join('');
-            } catch (e) {
-                section.classList.add('hidden');
+                `;
+                postsContainer.insertAdjacentHTML('beforeend', postCard);
+            });
+        }
+
+        async function deletePost(postId) {
+            if(confirm('Bạn có chắc chắn muốn xóa bài viết này không?')) {
+                cloudData.posts = cloudData.posts.filter(p => p.id !== postId);
+                alert('Đang xóa bài viết...');
+                await saveDataToCloud();
+                alert('Xóa bài viết thành công!');
             }
         }
 
-        function openWarningModal() {
-            document.getElementById('warning-modal-title').textContent = 'Đăng Khuyến Cáo';
-            document.getElementById('warn-edit-index').value = '';
-            document.getElementById('warn-content').value = '';
-            openModal('warning-modal');
-        }
+        async function submitNewPost() {
+            const title = document.getElementById('postTitle').value.trim();
+            const content = document.getElementById('postContent').value.trim();
+            const currentUser = localStorage.getItem('thoatv_user');
 
-        async function openEditWarning(index) {
-            try {
-                const data = await fetchBinData();
-                const warn = data.warnings[index];
-                document.getElementById('warning-modal-title').textContent = 'Sửa Khuyến Cáo';
-                document.getElementById('warn-edit-index').value = index;
-                document.getElementById('warn-content').value = warn.content;
-                openModal('warning-modal');
-            } catch (err) {
-                alert('Lỗi tải khuyến cáo.');
-            }
-        }
-
-        async function handleSaveWarning(e) {
-            e.preventDefault();
-            const raw = localStorage.getItem('current_user');
-            if (!raw) return;
-            const user = JSON.parse(raw);
-            if (user.role !== 'admin') {
-                alert('Chỉ Quản trị viên mới có quyền đăng khuyến cáo!');
+            if(!currentUser) {
+                alert('Vui lòng đăng nhập để đăng bài!');
                 return;
             }
 
-            const editIndex = document.getElementById('warn-edit-index').value;
-            const content = document.getElementById('warn-content').value;
-
-            try {
-                const data = await fetchBinData();
-                data.warnings = data.warnings || [];
-
-                if (editIndex === '') {
-                    data.warnings.unshift({ content, author: user.username, date: new Date().toLocaleDateString('vi-VN') });
-                    alert('Đăng khuyến cáo thành công!');
-                } else {
-                    const idx = parseInt(editIndex);
-                    data.warnings[idx] = { ...data.warnings[idx], content };
-                    alert('Cập nhật khuyến cáo thành công!');
-                }
-
-                await updateBinData(data);
-                closeModal('warning-modal');
-                loadWarnings();
-            } catch (err) {
-                alert('Lỗi: ' + err.message);
+            if(!title || !content) {
+                alert('Vui lòng điền đầy đủ tiêu đề và nội dung bài viết!');
+                return;
             }
+
+            const newPost = {
+                id: Date.now(),
+                title: title,
+                content: content,
+                author: currentUser,
+                time: new Date().toLocaleString('vi-VN')
+            };
+
+            cloudData.posts.unshift(newPost);
+            alert('Đang đăng bài viết lên hệ thống...');
+            await saveDataToCloud();
+
+            document.getElementById('postTitle').value = '';
+            document.getElementById('postContent').value = '';
+            closePostModal();
+            alert('Đăng bài thành công!');
         }
 
-        async function deleteWarning(index) {
-            if (!confirm('Bạn có chắc chắn muốn xóa khuyến cáo này không?')) return;
-            try {
-                const data = await fetchBinData();
-                data.warnings.splice(index, 1);
-                await updateBinData(data);
-                alert('Xóa khuyến cáo thành công!');
-                loadWarnings();
-            } catch (err) {
-                alert('Lỗi khi xóa khuyến cáo.');
+        // --- HỆ THỐNG THÔNG BÁO ---
+        const bellBtn = document.getElementById('bellBtn');
+        const notifDropdown = document.getElementById('notifDropdown');
+        const notifList = document.getElementById('notifList');
+        const notifBadge = document.getElementById('notifBadge');
+        const markAllReadBtn = document.getElementById('markAllReadBtn');
+
+        function renderNotifications() {
+            notifList.innerHTML = '';
+            let unreadCount = 0;
+
+            if (!cloudData.notifications || cloudData.notifications.length === 0) {
+                notifList.innerHTML = '<div style="padding: 16px; text-align: center; color: #9ca3af; font-size: 13px;">Không có thông báo nào.</div>';
+                notifBadge.style.display = 'none';
+                return;
             }
+
+            cloudData.notifications.forEach(item => {
+                if (!item.isRead) unreadCount++;
+                const notifItem = document.createElement('div');
+                notifItem.className = `notification-item ${item.isRead ? '' : 'unread'}`;
+                notifItem.innerHTML = `
+                    <div class="notification-item-title">${item.title}</div>
+                    <div class="notification-item-desc">${item.desc}</div>
+                    <div class="notification-item-time">${item.time}</div>
+                `;
+                notifItem.addEventListener('click', async () => {
+                    item.isRead = true;
+                    await saveDataToCloud();
+                });
+                notifList.appendChild(notifItem);
+            });
+
+            notifBadge.textContent = unreadCount;
+            notifBadge.style.display = unreadCount > 0 ? 'block' : 'none';
         }
 
-        async function loadRecommendations() {
-            const container = document.getElementById('recommendations-container');
-            try {
-                const data = await fetchBinData();
-                const recommendations = data.recommendations || [];
-                const rawUser = localStorage.getItem('current_user');
-                const currentUser = rawUser ? JSON.parse(rawUser) : null;
+        bellBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            notifDropdown.classList.toggle('show');
+        });
 
-                if (recommendations.length === 0) {
-                    container.innerHTML = `<p class="text-slate-500 text-center py-4 text-sm">Chưa có khuyến nghị cộng đồng nào.</p>`;
+        markAllReadBtn.addEventListener('click', async () => {
+            cloudData.notifications.forEach(item => item.isRead = true);
+            await saveDataToCloud();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!notifDropdown.contains(e.target) && !bellBtn.contains(e.target)) {
+                notifDropdown.classList.remove('show');
+            }
+        });
+
+        const notifModal = document.getElementById('notifModal');
+        function openNotifModal() { notifModal.classList.remove('hidden'); }
+        function closeNotifModal() { notifModal.classList.add('hidden'); }
+
+        async function submitNewNotification() {
+            const title = document.getElementById('notifTitleInput').value.trim();
+            const desc = document.getElementById('notifDescInput').value.trim();
+
+            if(!title || !desc) {
+                alert('Vui lòng điền đầy đủ tiêu đề và nội dung thông báo!');
+                return;
+            }
+
+            const newNotif = {
+                id: Date.now(),
+                title: title,
+                desc: desc,
+                time: 'Vừa xong',
+                isRead: false
+            };
+
+            cloudData.notifications.unshift(newNotif);
+            alert('Đang phát hành thông báo...');
+            await saveDataToCloud();
+
+            document.getElementById('notifTitleInput').value = '';
+            document.getElementById('notifDescInput').value = '';
+            closeNotifModal();
+            alert('Đăng thông báo thành công!');
+        }
+
+        // --- XỬ LÝ MODAL QUY CHẾ ---
+        const rulesModal = document.getElementById('rulesModal');
+        function openRulesModal() { rulesModal.classList.remove('hidden'); }
+        function closeRulesModal() { rulesModal.classList.add('hidden'); }
+
+        // --- XỬ LÝ ĐĂNG NHẬP & QUY CHẾ ---
+        const authModal = document.getElementById('authModal');
+        const stepEmail = document.getElementById('stepEmail');
+        const stepOtp = document.getElementById('stepOtp');
+        let generatedOtp = '';
+        let pendingLoginEmail = '';
+
+        function openAuthModal() {
+            authModal.classList.remove('hidden');
+            stepEmail.classList.remove('hidden');
+            stepOtp.classList.add('hidden');
+            document.getElementById('agreeTerms').checked = false;
+        }
+
+        function closeAuthModal() {
+            authModal.classList.add('hidden');
+        }
+
+        function sendOtpCode() {
+            const email = document.getElementById('userEmailInput').value.trim();
+            const agreeTerms = document.getElementById('agreeTerms').checked;
+
+            if(!email) {
+                alert('Vui lòng nhập địa chỉ email của bạn!');
+                return;
+            }
+
+            if(!agreeTerms) {
+                alert('Vui lòng đọc và tích chọn đồng ý với Quy chế sử dụng trước khi tiếp tục!');
+                return;
+            }
+
+            pendingLoginEmail = email;
+            generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            const templateParams = {
+                to_email: email,
+                otp_code: generatedOtp,
+                user_name: email.split('@')[0]
+            };
+
+            alert('Đang gửi mã OTP đến ' + email + '...');
+            emailjs.send('service_6p50yqk', 'template_ldblnii', templateParams, 'qzL3Psz5UVwGWWa0v')
+                .then(function() {
+                    alert('Đã gửi mã OTP thành công!');
+                    stepEmail.classList.add('hidden');
+                    stepOtp.classList.remove('hidden');
+                }, function(error) {
+                    alert('Gửi mã OTP thất bại: ' + JSON.stringify(error));
+                });
+        }
+
+        async function verifyOtpCode() {
+            const userOtp = document.getElementById('otpInput').value.trim();
+            if(!userOtp) {
+                alert('Vui lòng nhập mã OTP!');
+                return;
+            }
+
+            if(userOtp === generatedOtp) {
+                if(!cloudData.admin) {
+                    cloudData.admin = pendingLoginEmail;
+                    cloudData.users.push({ email: pendingLoginEmail, status: 'approved' });
+                    await saveDataToCloud();
+                    completeLogin(pendingLoginEmail);
                     return;
                 }
 
-                container.innerHTML = recommendations.map((rec, index) => {
-                    const canModify = currentUser && (currentUser.role === 'admin' || currentUser.username === rec.author);
-                    return `
-                        <div class="bg-indigo-50/60 border-l-4 border-indigo-600 p-4 rounded-xl shadow-sm flex justify-between items-start">
+                let userRecord = cloudData.users.find(u => u.email === pendingLoginEmail);
+
+                if(!userRecord) {
+                    cloudData.users.push({ email: pendingLoginEmail, status: 'pending' });
+                    await saveDataToCloud();
+                    closeAuthModal();
+                    alert('Đăng ký tài khoản thành công! Tài khoản của bạn đang chờ Admin duyệt để có thể đăng nhập.');
+                    return;
+                }
+
+                if(userRecord.status === 'pending') {
+                    alert('Tài khoản của bạn đang chờ Admin duyệt. Vui lòng thử lại sau!');
+                    return;
+                }
+
+                if(userRecord.status === 'approved') {
+                    completeLogin(pendingLoginEmail);
+                }
+            } else {
+                alert('Mã OTP không chính xác!');
+            }
+        }
+
+        function completeLogin(email) {
+            alert('Đăng nhập thành công!');
+            localStorage.setItem('thoatv_user', email);
+            closeAuthModal();
+            updateUserUI(email);
+            renderPosts();
+        }
+
+        function updateUserUI(email) {
+            const authArea = document.getElementById('authArea');
+            if(authArea) {
+                authArea.innerHTML = `
+                    <div class="flex items-center space-x-2 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100">
+                        <i class="fa-solid fa-user-check text-indigo-600 text-sm"></i>
+                        <span class="text-xs font-semibold text-indigo-700 truncate max-w-[140px]">${email} ${email === cloudData.admin ? '(Admin)' : ''}</span>
+                        <button onclick="logoutUser()" class="text-gray-400 hover:text-red-600 ml-1" title="Đăng xuất">
+                            <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                        </button>
+                    </div>
+                `;
+            }
+
+            const createPostBtnContainer = document.getElementById('createPostBtnContainer');
+            let buttonsHTML = `
+                <button onclick="openPostModal()" class="bg-indigo-600 text-white text-xs font-semibold px-3.5 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center space-x-1.5 shadow-sm">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Đăng Bài Mới</span>
+                </button>
+            `;
+
+            if(email === cloudData.admin) {
+                buttonsHTML += `
+                    <button onclick="openNotifModal()" class="bg-amber-600 text-white text-xs font-semibold px-3.5 py-2 rounded-lg hover:bg-amber-700 transition flex items-center space-x-1.5 shadow-sm">
+                        <i class="fa-solid fa-bullhorn"></i>
+                        <span>Đăng Thông Báo</span>
+                    </button>
+                    <button onclick="openAdminModal()" class="bg-red-600 text-white text-xs font-semibold px-3.5 py-2 rounded-lg hover:bg-red-700 transition flex items-center space-x-1.5 shadow-sm">
+                        <i class="fa-solid fa-user-shield"></i>
+                        <span>Duyệt Tài Khoản</span>
+                    </button>
+                `;
+            }
+
+            if(createPostBtnContainer) {
+                createPostBtnContainer.innerHTML = buttonsHTML;
+            }
+        }
+
+        function logoutUser() {
+            localStorage.removeItem('thoatv_user');
+            location.reload();
+        }
+
+        function backToEmailStep() {
+            stepOtp.classList.add('hidden');
+            stepEmail.classList.remove('hidden');
+        }
+
+        // Quản trị duyệt tài khoản
+        function openAdminModal() {
+            const adminModal = document.getElementById('adminModal');
+            const pendingList = document.getElementById('pendingUsersList');
+            const pendingUsers = cloudData.users.filter(u => u.status === 'pending');
+
+            pendingList.innerHTML = '';
+            if(pendingUsers.length === 0) {
+                pendingList.innerHTML = '<p class="text-sm text-gray-500 italic text-center py-6">Không có tài khoản nào đang chờ duyệt.</p>';
+            } else {
+                pendingUsers.forEach(user => {
+                    pendingList.innerHTML += `
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 flex justify-between items-center">
                             <div>
-                                <p class="text-indigo-950 font-medium whitespace-pre-line text-sm md:text-base">${rec.content}</p>
-                                <span class="text-xs text-indigo-500 mt-2 block">Đăng bởi: @${rec.author} - ${rec.date}</span>
+                                <p class="text-sm font-bold text-gray-900">${user.email}</p>
+                                <span class="text-[11px] bg-yellow-100 text-yellow-800 font-semibold px-2 py-0.5 rounded">Chờ duyệt đăng nhập</span>
                             </div>
-                            ${canModify ? `
-                                <div class="flex space-x-1 ml-4 flex-shrink-0">
-                                    <button onclick="openEditRecommendation(${index})" class="bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded text-xs">Sửa</button>
-                                    <button onclick="deleteRecommendation(${index})" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs">Xóa</button>
-                                </div>
-                            ` : ''}
+                            <div class="space-x-2">
+                                <button onclick="approveUser('${user.email}')" class="bg-green-600 text-white text-xs px-3 py-1.5 rounded hover:bg-green-700 font-medium">Phê Duyệt</button>
+                                <button onclick="rejectUser('${user.email}')" class="bg-red-600 text-white text-xs px-3 py-1.5 rounded hover:bg-red-700 font-medium">Từ Chối</button>
+                            </div>
                         </div>
                     `;
-                }).join('');
-            } catch (e) {
-                container.innerHTML = `<p class="text-red-500 text-center py-4 text-sm">Lỗi tải khuyến nghị.</p>`;
-            }
-        }
-
-        function openRecommendationModal() {
-            const raw = localStorage.getItem('current_user');
-            if (!raw) { alert('Vui lòng đăng nhập để thêm khuyến nghị.'); openModal('login-modal'); return; }
-            document.getElementById('recommendation-modal-title').textContent = 'Đăng Khuyến Nghị Cộng Đồng';
-            document.getElementById('rec-edit-index').value = '';
-            document.getElementById('rec-content').value = '';
-            openModal('recommendation-modal');
-        }
-
-        async function openEditRecommendation(index) {
-            try {
-                const data = await fetchBinData();
-                const rec = data.recommendations[index];
-                document.getElementById('recommendation-modal-title').textContent = 'Sửa Khuyến Nghị';
-                document.getElementById('rec-edit-index').value = index;
-                document.getElementById('rec-content').value = rec.content;
-                openModal('recommendation-modal');
-            } catch (err) {
-                alert('Lỗi tải khuyến nghị.');
-            }
-        }
-
-        async function handleSaveRecommendation(e) {
-            e.preventDefault();
-            const raw = localStorage.getItem('current_user');
-            if (!raw) return;
-            const user = JSON.parse(raw);
-
-            const editIndex = document.getElementById('rec-edit-index').value;
-            const content = document.getElementById('rec-content').value;
-
-            try {
-                const data = await fetchBinData();
-                data.recommendations = data.recommendations || [];
-
-                if (editIndex === '') {
-                    data.recommendations.unshift({ content, author: user.username, date: new Date().toLocaleDateString('vi-VN') });
-                    alert('Đăng khuyến nghị thành công!');
-                } else {
-                    const idx = parseInt(editIndex);
-                    if (user.role !== 'admin' && data.recommendations[idx].author !== user.username) {
-                        alert('Bạn chỉ có quyền sửa khuyến nghị của chính mình!');
-                        return;
-                    }
-                    data.recommendations[idx] = { ...data.recommendations[idx], content };
-                    alert('Cập nhật khuyến nghị thành công!');
-                }
-
-                await updateBinData(data);
-                closeModal('recommendation-modal');
-                loadRecommendations();
-            } catch (err) {
-                alert('Lỗi: ' + err.message);
-            }
-        }
-
-        async function deleteRecommendation(index) {
-            if (!confirm('Bạn có chắc chắn muốn xóa khuyến nghị này không?')) return;
-            const raw = localStorage.getItem('current_user');
-            if (!raw) return;
-            const user = JSON.parse(raw);
-
-            try {
-                const data = await fetchBinData();
-                const rec = data.recommendations[index];
-                if (user.role !== 'admin' && rec.author !== user.username) {
-                    alert('Bạn chỉ có quyền xóa khuyến nghị của chính mình!');
-                    return;
-                }
-                data.recommendations.splice(index, 1);
-                await updateBinData(data);
-                alert('Xóa khuyến nghị thành công!');
-                loadRecommendations();
-            } catch (err) {
-                alert('Lỗi khi xóa khuyến nghị.');
-            }
-        }
-
-        let allUsersForRecovery = [];
-        async function loadRecoveryAccountsList() {
-            try {
-                const data = await fetchBinData();
-                allUsersForRecovery = data.users || [];
-                renderRecoveryList(allUsersForRecovery);
-            } catch (e) {
-                document.getElementById('fu-accounts-list').innerHTML = `<p class="text-xs text-red-500">Lỗi tải danh sách.</p>`;
-            }
-        }
-
-        function renderRecoveryList(users) {
-            const container = document.getElementById('fu-accounts-list');
-            if (users.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">Không tìm thấy tài khoản.</p>`;
-                return;
-            }
-            container.innerHTML = users.map(u => `
-                <div onclick="selectRecoveryAccount('${u.username}')" id="acc-item-${u.username}" class="px-3 py-1.5 text-sm rounded cursor-pointer hover:bg-indigo-50 border border-transparent transition flex justify-between items-center">
-                    <span>@${u.username}</span>
-                    <span class="text-xs text-slate-400 uppercase">${u.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}</span>
-                </div>
-            `).join('');
-        }
-
-        function filterAccountsForRecovery() {
-            const query = document.getElementById('fu-search').value.toLowerCase().trim();
-            const filtered = allUsersForRecovery.filter(u => u.username.toLowerCase().includes(query));
-            renderRecoveryList(filtered);
-        }
-
-        function selectRecoveryAccount(username) {
-            document.querySelectorAll('#fu-accounts-list > div').forEach(el => el.classList.remove('bg-indigo-100', 'border-indigo-300'));
-            const selectedEl = document.getElementById(`acc-item-${username}`);
-            if (selectedEl) selectedEl.classList.add('bg-indigo-100', 'border-indigo-300');
-            document.getElementById('fu-selected-username').value = username;
-        }
-
-        async function handleForgotUsername(e) {
-            e.preventDefault();
-            const password = document.getElementById('fu-password').value;
-            const oldUsername = document.getElementById('fu-selected-username').value;
-            const newUsername = document.getElementById('fu-new-username').value.trim();
-            const errDiv = document.getElementById('fu-error');
-            errDiv.classList.add('hidden');
-
-            if (!oldUsername) {
-                errDiv.textContent = 'Vui lòng chọn tài khoản cần đổi tên từ danh sách.';
-                errDiv.classList.remove('hidden');
-                return;
-            }
-
-            if (!/^[a-zA-Z]+$/.test(newUsername)) {
-                errDiv.textContent = 'Tên tài khoản mới chỉ được chứa chữ cái, không khoảng trắng.';
-                errDiv.classList.remove('hidden');
-                return;
-            }
-
-            try {
-                const data = await fetchBinData();
-                data.users = data.users || [];
-
-                const userIndex = data.users.findIndex(u => u.username === oldUsername);
-                if (userIndex === -1 || data.users[userIndex].password !== password) {
-                    throw new Error('Mật khẩu không chính xác hoặc tài khoản không tồn tại.');
-                }
-
-                if (data.users[userIndex].canRename === false) {
-                    throw new Error('Tính năng đổi tên của bạn đã bị Quản trị viên khóa do nghi ngờ bảo mật.');
-                }
-
-                if (data.users.some(u => u.username === newUsername)) {
-                    throw new Error('Tên tài khoản mới đã tồn tại trong hệ thống.');
-                }
-
-                data.users[userIndex].username = newUsername;
-
-                if (data.articles) {
-                    data.articles = data.articles.map(art => art.author === oldUsername ? { ...art, author: newUsername } : art);
-                }
-                
-                if (data.recommendations) {
-                    data.recommendations = data.recommendations.map(rec => rec.author === oldUsername ? { ...rec, author: newUsername } : rec);
-                }
-
-                await updateBinData(data);
-                alert(`Đổi tên thành công! Tên mới: @${newUsername}. Vui lòng đăng nhập lại.`);
-                closeModal('forgot-username-modal');
-                switchToLoginModal();
-            } catch (err) {
-                errDiv.textContent = err.message;
-                errDiv.classList.remove('hidden');
-            }
-        }
-
-        async function handleRegister(e) {
-            e.preventDefault();
-            const username = document.getElementById('reg-username').value.trim();
-            const email = document.getElementById('reg-email').value.trim();
-            const password = document.getElementById('reg-password').value;
-            const errDiv = document.getElementById('reg-error');
-            errDiv.classList.add('hidden');
-
-            if (!/^[a-zA-Z]+$/.test(username)) {
-                errDiv.textContent = 'Tên tài khoản chỉ được chứa chữ cái, không khoảng trắng.';
-                errDiv.classList.remove('hidden');
-                return;
-            }
-
-            const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/;
-            if (!passRegex.test(password)) {
-                errDiv.textContent = 'Mật khẩu phải chứa ít nhất chữ thường, hoa, số và ký tự đặc biệt.';
-                errDiv.classList.remove('hidden');
-                return;
-            }
-
-            try {
-                const data = await fetchBinData();
-                data.users = data.users || [];
-
-                if (data.users.some(u => u.username === username)) {
-                    throw new Error('Tên tài khoản đã tồn tại.');
-                }
-
-                if (data.users.some(u => u.email === email)) {
-                    throw new Error('Email này đã được sử dụng cho tài khoản khác.');
-                }
-
-                data.users.push({
-                    username,
-                    email,
-                    password,
-                    role: 'member',
-                    status: 'pending',
-                    canRename: true
                 });
-
-                await addNotification('all_admin', `Có thành viên mới đăng ký tài khoản: @${username}`);
-
-                await updateBinData(data);
-                alert('Đăng ký thành công! Vui lòng đợi Quản trị viên duyệt tài khoản.');
-                closeModal('register-modal');
-                switchToLoginModal();
-            } catch (err) {
-                errDiv.textContent = err.message;
-                errDiv.classList.remove('hidden');
             }
+            adminModal.classList.remove('hidden');
         }
 
-        async function handleLogin(e) {
-            e.preventDefault();
-            const username = document.getElementById('login-username').value.trim();
-            const password = document.getElementById('login-password').value;
-            const errDiv = document.getElementById('login-error');
-            errDiv.classList.add('hidden');
-
-            try {
-                const data = await fetchBinData();
-                const users = data.users || [];
-                const user = users.find(u => u.username === username && u.password === password);
-
-                if (!user) throw new Error('Sai tên tài khoản hoặc mật khẩu.');
-                if (user.status === 'pending') throw new Error('Tài khoản của bạn đang chờ Quản trị viên duyệt.');
-
-                localStorage.setItem('current_user', JSON.stringify(user));
-                alert('Đăng nhập thành công!');
-                closeModal('login-modal');
-                checkAuthState();
-                loadOperatingHours();
-                loadWarnings();
-                loadRecommendations();
-                checkAndPublishScheduledArticles();
-            } catch (err) {
-                errDiv.textContent = err.message;
-                errDiv.classList.remove('hidden');
-            }
+        function closeAdminModal() {
+            document.getElementById('adminModal').classList.add('hidden');
         }
 
-        function checkAuthState() {
-            const raw = localStorage.getItem('current_user');
-            const authNav = document.getElementById('auth-nav');
-            const authMobileBar = document.getElementById('auth-nav-mobile-bar');
-            const adminLink = document.getElementById('nav-admin-link');
-            const createArticleBtn = document.getElementById('create-article-btn-container');
-            const adminOnlyFeatures = document.getElementById('admin-only-features');
-            const addRecommendationBtn = document.getElementById('add-recommendation-btn');
-            const editHoursContainer = document.getElementById('admin-edit-hours-container');
-
-            if (raw) {
-                const user = JSON.parse(raw);
-                const roleName = user.role === 'admin' ? 'Quản trị viên' : 'Thành viên';
-                
-                authNav.innerHTML = `
-                    <span class="text-sm font-semibold">@${user.username} (${roleName})</span>
-                    <button onclick="handleLogout()" class="bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded-lg text-sm">Đăng Xuất</button>
-                `;
-
-                authMobileBar.innerHTML = `
-                    <span class="text-xs font-semibold text-slate-700">@${user.username} (${roleName})</span>
-                    <span class="text-slate-300">|</span>
-                    <button onclick="handleLogout()" class="text-xs font-bold text-indigo-600">Đăng Xuất</button>
-                `;
-
-                if (user.role === 'admin') {
-                    adminLink.classList.remove('hidden');
-                    adminOnlyFeatures.classList.remove('hidden');
-                    editHoursContainer.classList.remove('hidden');
-                } else {
-                    adminLink.classList.add('hidden');
-                    adminOnlyFeatures.classList.add('hidden');
-                    editHoursContainer.classList.add('hidden');
-                }
-                createArticleBtn.classList.remove('hidden');
-                addRecommendationBtn.classList.remove('hidden');
-            } else {
-                authNav.innerHTML = `
-                    <button onclick="openModal('login-modal')" class="text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-lg font-medium transition">Đăng Nhập</button>
-                    <button onclick="openModal('register-modal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition">Đăng Ký</button>
-                `;
-
-                authMobileBar.innerHTML = `
-                    <button onclick="openModal('login-modal')" class="text-indigo-600 text-sm font-medium">Đăng Nhập</button>
-                    <span class="text-slate-300">|</span>
-                    <button onclick="openModal('register-modal')" class="text-indigo-600 text-sm font-medium">Đăng Ký</button>
-                `;
-
-                adminLink.classList.add('hidden');
-                createArticleBtn.classList.add('hidden');
-                adminOnlyFeatures.classList.add('hidden');
-                addRecommendationBtn.classList.add('hidden');
-                editHoursContainer.classList.add('hidden');
-            }
-            loadNotifications();
-        }
-
-        function handleLogout() {
-            localStorage.removeItem('current_user');
-            checkAuthState();
-            switchView('home');
-            alert('Đã đăng xuất.');
-        }
-
-        async function checkAndPublishScheduledArticles() {
-            try {
-                const data = await fetchBinData();
-                if (!data.articles) return;
-
-                const now = Date.now();
-                let hasChanges = false;
-
-                data.articles = data.articles.map(art => {
-                    if (art.status === 'scheduled' && art.scheduledTime && now >= art.scheduledTime) {
-                        hasChanges = true;
-                        addNotification(art.author, `Bài viết "${art.title}" của bạn đã được đăng tự động theo lịch.`);
-                        return { ...art, status: 'published' };
-                    }
-                    return art;
-                });
-
-                if (hasChanges) {
-                    await updateBinData(data);
-                }
-
-                loadArticles();
-            } catch (e) {
-                loadArticles();
-            }
-        }
-
-        async function loadArticles() {
-            const container = document.getElementById('articles-container');
-            container.innerHTML = `<p class="text-slate-500 col-span-full text-center py-10">Đang tải...</p>`;
-            try {
-                const data = await fetchBinData();
-                const articles = data.articles || [];
-                const rawUser = localStorage.getItem('current_user');
-                const currentUser = rawUser ? JSON.parse(rawUser) : null;
-
-                const publishedArticles = articles.filter(art => !art.status || art.status === 'published');
-
-                if (publishedArticles.length === 0) {
-                    container.innerHTML = `<p class="text-slate-500 col-span-full text-center py-10">Chưa có bài viết công khai nào.</p>`;
-                    return;
-                }
-
-                container.innerHTML = publishedArticles.map((art) => {
-                    const realIndex = articles.findIndex(a => a === art);
-                    const canModify = currentUser && (currentUser.role === 'admin' || currentUser.username === art.author);
-                    return `
-                        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm flex flex-col justify-between">
-                            <div>
-                                ${art.img ? `<img src="${art.img}" class="w-full h-48 object-cover">` : ''}
-                                <div class="p-6">
-                                    <h3 class="text-xl font-bold mb-2">${art.title}</h3>
-                                    <p class="text-slate-600 text-sm mb-4">${art.desc || ''}</p>
-                                    ${art.source ? `<p class="text-xs text-indigo-600 font-medium mb-2">Nguồn: ${art.source}</p>` : ''}
-                                    <span class="text-xs text-slate-400">Đăng bởi: @${art.author} - ${art.date}</span>
-                                </div>
-                            </div>
-                            ${canModify ? `
-                                <div class="px-6 pb-4 flex space-x-2">
-                                    <button onclick="openEditArticle(${realIndex})" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 rounded text-xs font-semibold">Sửa</button>
-                                    <button onclick="deleteArticle(${realIndex})" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-semibold">Xóa</button>
-                                </div>
-                            ` : ''}
-                        </div>
-                    `;
-                }).join('');
-            } catch (err) {
-                container.innerHTML = `<p class="text-red-500 col-span-full text-center py-10">Lỗi tải dữ liệu.</p>`;
-            }
-        }
-
-        function toggleScheduleInput() {
-            const isChecked = document.getElementById('art-schedule-check').checked;
-            const container = document.getElementById('art-schedule-container');
-            if (isChecked) {
-                container.classList.remove('hidden');
-            } else {
-                container.classList.add('hidden');
-            }
-        }
-
-        function openArticleModal() {
-            document.getElementById('article-modal-title').textContent = 'Đăng Bài Viết Mới';
-            document.getElementById('art-edit-index').value = '';
-            document.getElementById('art-title').value = '';
-            document.getElementById('art-desc').value = '';
-            document.getElementById('art-img').value = '';
-            document.getElementById('art-source').value = '';
-            document.getElementById('art-schedule-check').checked = false;
-            document.getElementById('art-schedule-container').classList.add('hidden');
-            document.getElementById('art-schedule-time').value = '';
-            openModal('article-modal');
-        }
-
-        async function openEditArticle(index) {
-            try {
-                const data = await fetchBinData();
-                const art = data.articles[index];
-                document.getElementById('article-modal-title').textContent = 'Sửa Bài Viết';
-                document.getElementById('art-edit-index').value = index;
-                document.getElementById('art-title').value = art.title;
-                document.getElementById('art-desc').value = art.desc;
-                document.getElementById('art-img').value = art.img || '';
-                document.getElementById('art-source').value = art.source || '';
-                
-                if (art.status === 'scheduled' && art.scheduledTime) {
-                    document.getElementById('art-schedule-check').checked = true;
-                    document.getElementById('art-schedule-container').classList.remove('hidden');
-                    const d = new Date(art.scheduledTime);
-                    const pad = (n) => n < 10 ? '0' + n : n;
-                    const formatted = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-                    document.getElementById('art-schedule-time').value = formatted;
-                } else {
-                    document.getElementById('art-schedule-check').checked = false;
-                    document.getElementById('art-schedule-container').classList.add('hidden');
-                    document.getElementById('art-schedule-time').value = '';
-                }
-
-                openModal('article-modal');
-            } catch (err) {
-                alert('Lỗi tải bài viết.');
-            }
-        }
-
-        async function handleSaveArticle(e) {
-            e.preventDefault();
-            const raw = localStorage.getItem('current_user');
-            if (!raw) { alert('Vui lòng đăng nhập.'); return; }
-            const user = JSON.parse(raw);
-
-            const editIndex = document.getElementById('art-edit-index').value;
-            const title = document.getElementById('art-title').value;
-            const desc = document.getElementById('art-desc').value;
-            const img = document.getElementById('art-img').value;
-            const source = document.getElementById('art-source').value;
-            
-            const isScheduled = document.getElementById('art-schedule-check').checked;
-            const scheduleTimeStr = document.getElementById('art-schedule-time').value;
-
-            if (isScheduled && !scheduleTimeStr) {
-                alert('Vui lòng chọn thời gian lên lịch đăng bài.');
-                return;
-            }
-
-            try {
-                const data = await fetchBinData();
-                data.articles = data.articles || [];
-
-                const status = isScheduled ? 'scheduled' : 'published';
-                const scheduledTime = isScheduled ? new Date(scheduleTimeStr).getTime() : null;
-
-                if (editIndex === '') {
-                    data.articles.unshift({ 
-                        title, 
-                        desc, 
-                        img, 
-                        source, 
-                        author: user.username, 
-                        date: new Date().toLocaleDateString('vi-VN'),
-                        status,
-                        scheduledTime
-                    });
-
-                    if (isScheduled) {
-                        alert('Đã lên lịch đăng bài thành công!');
-                        await addNotification(user.username, `Bài viết "${title}" của bạn đã được lên lịch đăng vào lúc ${new Date(scheduledTime).toLocaleString('vi-VN')}.`);
-                        await addNotification('all_admin', `Thành viên @${user.username} đã lên lịch bài viết mới: "${title}".`);
-                    } else {
-                        alert('Đăng bài thành công ngay lập tức!');
-                        await addNotification(user.username, `Bài viết "${title}" của bạn đã được đăng công khai thành công.`);
-                        await addNotification('all_admin', `Có bài viết mới được đăng bởi @${user.username}: "${title}".`);
-                    }
-                } else {
-                    const idx = parseInt(editIndex);
-                    if (user.role !== 'admin' && data.articles[idx].author !== user.username) {
-                        alert('Bạn chỉ có quyền sửa bài viết của chính mình!');
-                        return;
-                    }
-                    data.articles[idx] = { 
-                        ...data.articles[idx], 
-                        title, 
-                        desc, 
-                        img, 
-                        source,
-                        status,
-                        scheduledTime
-                    };
-                    alert('Cập nhật bài viết thành công!');
-                }
-
-                await updateBinData(data);
-                closeModal('article-modal');
-                loadArticles();
-            } catch (err) {
-                alert('Lỗi: ' + err.message);
-            }
-        }
-
-        async function deleteArticle(index) {
-            if (!confirm('Bạn có chắc chắn muốn xóa bài viết này không?')) return;
-            const raw = localStorage.getItem('current_user');
-            if (!raw) return;
-            const user = JSON.parse(raw);
-
-            try {
-                const data = await fetchBinData();
-                const art = data.articles[index];
-                if (user.role !== 'admin' && art.author !== user.username) {
-                    alert('Bạn chỉ có quyền xóa bài viết của chính mình!');
-                    return;
-                }
-                
-                if (user.role === 'admin' && art.author !== user.username) {
-                    await addNotification(art.author, `Bài viết "${art.title}" của bạn đã bị Quản trị viên gỡ xuống.`);
-                }
-
-                data.articles.splice(index, 1);
-                await updateBinData(data);
-                alert('Xóa bài thành công!');
-                loadArticles();
-            } catch (err) {
-                alert('Lỗi khi xóa bài.');
-            }
-        }
-
-        async function loadAccountsList() {
-            const container = document.getElementById('accounts-list-container');
-            container.innerHTML = `<p class="text-slate-500">Đang tải...</p>`;
-            try {
-                const data = await fetchBinData();
-                const users = data.users || [];
-                container.innerHTML = `
-                    <table class="w-full text-left border-collapse min-w-[500px]">
-                        <thead>
-                            <tr class="border-b text-sm text-slate-500">
-                                <th class="py-2">Tài khoản</th>
-                                <th class="py-2">Email</th>
-                                <th class="py-2">Trạng thái</th>
-                                <th class="py-2">Vai trò</th>
-                                <th class="py-2">Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${users.map(u => `
-                                <tr class="border-b">
-                                    <td class="py-3 font-semibold">@${u.username}</td>
-                                    <td class="py-3 text-slate-600 text-sm">${u.email || 'Chưa có'}</td>
-                                    <td class="py-3"><span class="px-2 py-1 text-xs rounded ${u.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">${u.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}</span></td>
-                                    <td class="py-3 uppercase text-xs font-bold">${u.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}</td>
-                                    <td class="py-3 space-x-1 space-y-1">
-                                        ${u.status === 'pending' ? `<button onclick="approveUser('${u.username}')" class="bg-green-600 text-white px-2.5 py-1 rounded text-xs">Duyệt</button>` : ''}
-                                        <button onclick="toggleRenameLock('${u.username}')" class="px-2.5 py-1 rounded text-xs text-white ${u.canRename !== false ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'}">
-                                            ${u.canRename !== false ? 'Được đổi tên' : 'Đã khóa'}
-                                        </button>
-                                        <button onclick="openAdminChangePass('${u.username}')" class="bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 rounded text-xs">Đổi MK</button>
-                                        <button onclick="openAdminEditEmail('${u.username}', '${u.email || ''}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded text-xs">Sửa Email</button>
-                                        ${u.role !== 'admin' ? `<button onclick="makeAdmin('${u.username}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded text-xs">Chuyển Admin</button>` : ''}
-                                        <button onclick="deleteUser('${u.username}')" class="bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded text-xs">Xóa</button>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                `;
-            } catch (err) {
-                container.innerHTML = `<p class="text-red-500">Lỗi tải danh sách tài khoản.</p>`;
-            }
-        }
-
-        async function loadAdminArticlesList() {
-            const container = document.getElementById('admin-articles-list-container');
-            container.innerHTML = `<p class="text-slate-500">Đang tải danh sách bài viết...</p>`;
-            try {
-                const data = await fetchBinData();
-                const articles = data.articles || [];
-
-                if (articles.length === 0) {
-                    container.innerHTML = `<p class="text-slate-500 text-sm">Chưa có bài viết nào trong hệ thống.</p>`;
-                    return;
-                }
-
-                container.innerHTML = `
-                    <table class="w-full text-left border-collapse min-w-[600px]">
-                        <thead>
-                            <tr class="border-b text-sm text-slate-500">
-                                <th class="py-2">Tiêu đề</th>
-                                <th class="py-2">Tác giả</th>
-                                <th class="py-2">Trạng thái</th>
-                                <th class="py-2">Thời gian đăng / Lên lịch</th>
-                                <th class="py-2">Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${articles.map((art, index) => {
-                                const isSched = art.status === 'scheduled';
-                                const schedTimeText = isSched && art.scheduledTime ? new Date(art.scheduledTime).toLocaleString('vi-VN') : 'Đã xuất bản';
-                                return `
-                                    <tr class="border-b">
-                                        <td class="py-3 font-semibold max-w-xs truncate">${art.title}</td>
-                                        <td class="py-3 text-sm text-slate-600">@${art.author}</td>
-                                        <td class="py-3">
-                                            <span class="px-2 py-1 text-xs rounded ${isSched ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}">
-                                                ${isSched ? 'Đã lên lịch' : 'Đã công khai'}
-                                            </span>
-                                        </td>
-                                        <td class="py-3 text-xs text-slate-500">${schedTimeText}</td>
-                                        <td class="py-3 space-x-1">
-                                            <button onclick="openEditArticle(${index})" class="bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 rounded text-xs">Sửa</button>
-                                            <button onclick="deleteArticle(${index}); loadAdminArticlesList();" class="bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded text-xs">Xóa</button>
-                                        </td>
-                                    </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                `;
-            } catch (err) {
-                container.innerHTML = `<p class="text-red-500">Lỗi tải danh sách bài viết quản trị.</p>`;
-            }
-        }
-
-        async function approveUser(username) {
-            const data = await fetchBinData();
-            data.users = data.users.map(u => {
-                if (u.username === username) {
-                    return {...u, status: 'approved'};
-                }
+        async function approveUser(email) {
+            cloudData.users = cloudData.users.map(u => {
+                if(u.email === email) u.status = 'approved';
                 return u;
             });
-            await addNotification(username, `Tài khoản của bạn đã được Quản trị viên phê duyệt thành công!`);
-            await updateBinData(data);
-            loadAccountsList();
+            await saveDataToCloud();
+            alert('Đã phê duyệt tài khoản thành công!');
+            openAdminModal();
         }
 
-        async function toggleRenameLock(username) {
-            const data = await fetchBinData();
-            data.users = data.users.map(u => {
-                if (u.username === username) {
-                    const current = u.canRename !== false;
-                    return {...u, canRename: !current};
+        async function rejectUser(email) {
+            if(confirm(`Bạn có chắc muốn từ chối/xóa tài khoản ${email}?`)) {
+                cloudData.users = cloudData.users.filter(u => u.email !== email);
+                await saveDataToCloud();
+                alert('Đã từ chối tài khoản.');
+                openAdminModal();
+            }
+        }
+
+        const postModal = document.getElementById('postModal');
+        function openPostModal() { postModal.classList.remove('hidden'); }
+        function closePostModal() { postModal.classList.add('hidden'); }
+
+        window.onload = function() {
+            fetchDataFromCloud().then(() => {
+                const savedUser = localStorage.getItem('thoatv_user');
+                if(savedUser) {
+                    updateUserUI(savedUser);
                 }
-                return u;
             });
-            await updateBinData(data);
-            loadAccountsList();
-        }
-
-        function openAdminChangePass(username) {
-            document.getElementById('admin-target-username').value = username;
-            document.getElementById('target-user-label').textContent = `Đổi mật khẩu cho tài khoản: @${username}`;
-            document.getElementById('admin-new-password').value = '';
-            openModal('admin-change-pass-modal');
-        }
-
-        function openAdminEditEmail(username, currentEmail) {
-            document.getElementById('admin-email-target-username').value = username;
-            document.getElementById('target-email-user-label').textContent = `Đổi email cho tài khoản: @${username}`;
-            document.getElementById('admin-new-email').value = currentEmail;
-            openModal('admin-edit-email-modal');
-        }
-
-        async function handleAdminSaveEmail(e) {
-            e.preventDefault();
-            const username = document.getElementById('admin-email-target-username').value;
-            const newEmail = document.getElementById('admin-new-email').value.trim();
-
-            try {
-                const data = await fetchBinData();
-                data.users = data.users.map(u => {
-                    if (u.username === username) {
-                        return { ...u, email: newEmail };
-                    }
-                    return u;
-                });
-                await updateBinData(data);
-                alert(`Đã cập nhật email thành công cho tài khoản @${username}!`);
-                closeModal('admin-edit-email-modal');
-                loadAccountsList();
-            } catch (err) {
-                alert('Lỗi: ' + err.message);
-            }
-        }
-
-        async function handleAdminChangePassword(e) {
-            e.preventDefault();
-            const username = document.getElementById('admin-target-username').value;
-            const newPassword = document.getElementById('admin-new-password').value;
-
-            const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/;
-            if (!passRegex.test(newPassword)) {
-                alert('Mật khẩu phải chứa ít nhất chữ thường, hoa, số và ký tự đặc biệt.');
-                return;
-            }
-
-            try {
-                const data = await fetchBinData();
-                data.users = data.users.map(u => u.username === username ? { ...u, password: newPassword } : u);
-                await updateBinData(data);
-                alert(`Đã đổi mật khẩu thành công cho tài khoản @${username}!`);
-                closeModal('admin-change-pass-modal');
-            } catch (err) {
-                alert('Lỗi: ' + err.message);
-            }
-        }
-
-        async function deleteUser(username) {
-            if (!confirm(`Xóa tài khoản @${username}?`)) return;
-            const data = await fetchBinData();
-            data.users = data.users.filter(u => u.username !== username);
-            await updateBinData(data);
-            loadAccountsList();
-        }
-
-        async function makeAdmin(newAdminUsername) {
-            if (!confirm(`Chuyển quyền Quản trị viên cho @${newAdminUsername}? Bạn sẽ trở thành tài khoản thường.`)) return;
-            const data = await fetchBinData();
-            data.users = data.users.map(u => u.username === newAdminUsername ? {...u, role: 'admin', status: 'approved'} : {...u, role: 'member'});
-            await updateBinData(data);
-            alert('Đã chuyển quyền Quản trị viên thành công! Vui lòng đăng nhập lại.');
-            handleLogout();
-        }
-
-        window.onload = () => {
-            applyLogo();
-            checkAuthState();
-            loadOperatingHours();
-            loadWarnings();
-            loadRecommendations();
-            checkAndPublishScheduledArticles();
-            setInterval(checkAndPublishScheduledArticles, 60000);
         };
     </script>
 </body>
